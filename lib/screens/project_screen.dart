@@ -1,10 +1,14 @@
 import 'dart:async';
+import 'dart:ffi';
 import 'package:audioplayer/audioplayer.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:spotify_manager/common/project_manager/project.dart';
+import 'package:spotify_manager/flutter_spotify/api/spotify_client.dart';
 import 'package:spotify_manager/flutter_spotify/model/track.dart';
+import 'package:spotify_manager/flutter_spotify/model/user.dart';
+import 'package:spotify_manager/main.dart';
 import 'package:spotify_manager/screens/create_project/form_fields.dart';
 import 'package:spotify_manager/common/utils.dart';
 import 'package:marquee/marquee.dart';
@@ -17,6 +21,7 @@ class ProjectScreenState extends State<ProjectScreen>
   AudioPlayer player = new AudioPlayer();
   AudioPlayerState playerState = AudioPlayerState.PLAYING;
   String curTrackUrl;
+  List<bool> selectedPlaylists;
   PageController pageController;
 
 
@@ -46,14 +51,33 @@ class ProjectScreenState extends State<ProjectScreen>
   Future<Track> getProjectTrack(int index) async {
     while (trackQueue.length <= index)
       await Future.delayed(Duration(milliseconds: 250));
-    return trackQueue[index];
+    final track = trackQueue[index];
+    return track;
+  }
+
+  void updatePlaylists(int itemIndex, List<bool> curSelectedPlaylists) async {
+    final track = trackQueue[itemIndex];
+    final playlists = project.playlists;
+    final initialPlaylists = project.playlists.map((p)=>p.contains(track)).toList();
+    final client = widget.client;
+    for (int i=0; i < playlists.length; i++) {
+      final playlist = playlists[i];
+      if ((!initialPlaylists[i] && curSelectedPlaylists[i])) {
+        print("adding ${track.name} -> ${playlist.playlist.name}");
+        await client.addTrackToPlaylist(track.uri, playlist.playlist.id);
+        playlist.trackIds.add(track.id);
+      }
+      if (initialPlaylists[i] && !curSelectedPlaylists[i]) {
+        print("removing ${track.name} -> ${playlist.playlist.name}");
+        await client.removeTrackFromPlaylist(track.uri, playlist.playlist.id);
+        playlist.trackIds.remove(track.id);
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context)
   {
-    final _project = project;
-
   return Scaffold(body: Column(children: <Widget>[
       Padding(padding: EdgeInsets.only(bottom: 20),),
       Row(children: <Widget>[
@@ -78,8 +102,12 @@ class ProjectScreenState extends State<ProjectScreen>
           controller: pageController,
           itemCount: project.totalTracks,
           onPageChanged: (index) {
+            if (selectedPlaylists != null)
+              updatePlaylists(project.curIndex, selectedPlaylists);
+            selectedPlaylists = null;
             project.curIndex = index;
             getProjectTrack(index).then((track){
+              selectedPlaylists = project.playlists.map((p)=>p.contains(track)).toList();
               curTrackUrl = track.previewUrl;
               player.stop();
               player.play(curTrackUrl);
@@ -125,10 +153,10 @@ class ProjectScreenState extends State<ProjectScreen>
               child: PlaylistsSelection(
                 key: GlobalKey<FormFieldState>(),
                 theme: Theme.of(context),
-                playlists: _project.playlists.map((p)=>p.playlist).toList(),
-                initialValue: _project.playlists.map((p)=>p.contains(track)).toList(),
+                playlists: project.playlists.map((p)=>p.playlist).toList(),
+                initialValue: project.playlists.map((p)=>p.contains(track)).toList(),
                 onSaved: (v){},
-                onChanged: (v){},
+                onChanged: (v){selectedPlaylists = v;},
                 validator: (v)=> null,
 
               ),
@@ -165,8 +193,10 @@ class ProjectScreenState extends State<ProjectScreen>
 class ProjectScreen extends StatefulWidget
 {
   final Project project;
+  final SpotifyClient client;
+  final User me;
 
-  ProjectScreen({Key key, @required this.project}) : super(key: key);
+  ProjectScreen({Key key, @required this.project, @required this.client, @required this.me}) : super(key: key);
 
   @override
   ProjectScreenState createState() => ProjectScreenState();

@@ -32,9 +32,11 @@ class ProjectsScreenState extends State<ProjectsScreen> {
       ,
       onTap: () {
         Navigator.of(context)
-            .push(MaterialPageRoute(builder: (BuildContext context) {
+            .push(MaterialPageRoute(builder: (BuildContext subContext) {
           return ProjectScreen(
             project: project,
+            client: SpotifyContainer.of(context).client,
+            me: SpotifyContainer.of(context).myDetails,
           );
         }));
       },

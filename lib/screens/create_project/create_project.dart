@@ -10,6 +10,7 @@ import 'package:spotify_manager/common/project_manager/project.dart';
 import 'package:spotify_manager/main.dart';
 import 'package:spotify_manager/common/utils.dart';
 import 'package:spotify_manager/flutter_spotify/api/spotify_client.dart';
+import 'package:spotify_manager/screens/new_playlist_dialog.dart';
 import 'form_fields.dart';
 
 class CreateProjectState extends State<CreateProject> {
@@ -49,7 +50,7 @@ class CreateProjectState extends State<CreateProject> {
         ),
         Expanded(
           child: SimpleFutureBuilder(_playlists,
-              (BuildContext context, playlists) => ProjectForm(playlists, widget.client)),
+              (BuildContext context, playlists) => ProjectForm(playlists, widget.client, widget.myDetails)),
         )
       ],
     ));
@@ -81,8 +82,7 @@ class ProjectFormState extends State<ProjectForm> {
     super.initState();
     pagesKeys = List.generate(3, (i) => GlobalKey<FormState>());
     selectedPlaylists = List<bool>.generate(
-        widget.playlists.length, (i) => false,
-        growable: false);
+        widget.playlists.length, (i) => false);
     pagesState[0] = true;
     controller.addListener(() {
       if (!(prevPage.isInt() && controller.page > prevPage)) {
@@ -150,16 +150,19 @@ class ProjectFormState extends State<ProjectForm> {
         child: Stack(
           alignment: AlignmentDirectional.center,
           children: <Widget>[
-            Divider(
-              thickness: 2.0,
-              color: Colors.white70,
+            SizedBox(
+              width: 100,
+              child: Divider(
+                thickness: 2.0,
+                color: Colors.white70,
+              ),
             ),
             Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: List<Widget>.generate(
                     pagesNum,
                     (i) => ButtonTheme(
-                          minWidth: 20,
+                          minWidth: pagesState.containsKey(i) && pagesState[i]?15:10,
                           child: FlatButton(
                             color: !pagesState.containsKey(i)
                                 ? Colors.grey[300]
@@ -168,7 +171,7 @@ class ProjectFormState extends State<ProjectForm> {
                                     : theme.secondaryHeaderColor,
                             shape: CircleBorder(
                                 side: pagesState.containsKey(i) && pagesState[i]
-                                    ? BorderSide(color: Colors.white, width: 2)
+                                    ? BorderSide(color: Colors.white, width: 1)
                                     : BorderSide(width: 0)),
                             padding: EdgeInsets.all(0),
                             onPressed: () {
@@ -234,7 +237,6 @@ class ProjectFormState extends State<ProjectForm> {
 
               onPressed: () async {
                 pagesKeys.last.currentState.save();
-                // NOTICE: maybe method should be async and await to crateSavedSongsProject?
                 Navigator.pop(context, await createSavedSongsProject());
               },
               padding: EdgeInsets.symmetric(vertical: 25, horizontal: 50),
@@ -253,16 +255,32 @@ class ProjectFormState extends State<ProjectForm> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text("Choose Playlists", style: theme.textTheme.display1),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Text(
-            "You will add songs to theme playlists trough the project",
-            style: theme.textTheme.caption,
-          ),
+        Stack(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Text(
+                "You will add songs to theme playlists trough the project",
+                style: theme.textTheme.caption,
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: IconButton(icon: Icon(Icons.add), onPressed: () async {
+                Playlist playlist = await showDialog(context: context, child: NewPlaylistDialog(widget.client, widget.myDetails.id));
+                if (playlist != null) {
+                  widget.playlists.add(playlist);
+                  setState(() {
+                    selectedPlaylists.add(true);
+                  });
+                }
+              },),
+            )
+          ],
         ),
         Expanded(
           child: Container(
-            margin: EdgeInsets.symmetric(vertical: 30),
+            margin: EdgeInsets.only(top: 5, bottom: 20),
             color: theme.backgroundColor,
             child: PlaylistsSelection(
               playlists: widget.playlists,
@@ -326,6 +344,7 @@ class ProjectFormState extends State<ProjectForm> {
 
 class ProjectForm extends StatefulWidget {
   final SpotifyClient client;
+  final User myDetails;
   final List<Playlist> playlists;
   final templates = <ProjectTemplate>[
     ProjectTemplate(
@@ -346,7 +365,7 @@ class ProjectForm extends StatefulWidget {
         Icons.build),
   ];
 
-  ProjectForm(this.playlists, this.client, {Key key}) : super(key: key);
+  ProjectForm(this.playlists, this.client, this.myDetails, {Key key}) : super(key: key);
 
   @override
   ProjectFormState createState() => ProjectFormState();
