@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
+import 'package:spotify/spotify_io.dart';
 import 'package:spotify_manager/flutter_spotify/model/user.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -83,6 +84,7 @@ class WelcomeScreenState extends State<WelcomeScreen> {
       if (uri == null || !uri.startsWith(redirectUrl))
         return;
       final authCode = uri.split("code=")[1];
+
       final client = SpotifyClient(await WelcomeScreen.grant.handleAuthorizationCode(authCode));
       final myDetails = await client.myDetails;
       Navigator.pushReplacement(context,

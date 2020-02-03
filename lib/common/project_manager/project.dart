@@ -1,4 +1,5 @@
 import 'package:spotify_manager/common/project_manager/project_playlist.dart';
+import 'package:spotify_manager/flutter_spotify/model/playlist.dart';
 import 'package:spotify_manager/flutter_spotify/model/track.dart';
 import 'package:uuid/uuid.dart';
 
@@ -10,7 +11,7 @@ class Project
   List<ProjectPlaylist> playlists;
   int totalTracks;
   int curIndex;
-
+  Stream<Track> get tracks => _getTracks();
 
   Project(this.name, this.totalTracks, this._getTracks, this.playlists)
   {
@@ -18,12 +19,17 @@ class Project
     uuid = new Uuid().v4();
   }
 
-  Stream<Track> get tracks => _getTracks();
+
 
   // TODO: implement fromJson
   Project.fromJson(Map<String, dynamic> json)
   {
     name = json["name"];
     uuid = json["uuid"];
+    totalTracks = json["totalTracks"];
+//    totalTracks = json["playlists"].map<ProjectPlaylist>((pJson)=>ProjectPlaylist.);
+
   }
+
+
 }

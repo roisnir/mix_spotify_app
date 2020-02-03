@@ -9,6 +9,16 @@ class ProjectPlaylist {
 
   ProjectPlaylist(this.playlist, this.trackIds);
 
+  ProjectPlaylist.fromJson(Map<String, dynamic> json) {
+    playlist = Playlist.fromJson(json['playlist']);
+    trackIds = json['trackIds'].map<String>((t)=>t as String);
+  }
+
+  toJson(Map<String, dynamic> json) {
+    playlist = Playlist.fromJson(json['playlist']);
+    trackIds = json['trackIds'].map<String>((t)=>t as String);
+  }
+
   bool includes(Track track) => trackIds.contains(track.id);
   bool contains(Track track) => trackIds.contains(track.id);
 }

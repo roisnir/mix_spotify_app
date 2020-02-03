@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:spotify_manager/flutter_spotify/model/base.dart';
 import 'package:spotify_manager/flutter_spotify/model/image.dart';
 import 'package:spotify_manager/flutter_spotify/model/user.dart';
@@ -11,9 +13,6 @@ class Playlist extends SpotifyItem {
   String tracksHref;
   List<Image> images;
 
-  
-
-
   Playlist.fromJson(Map<String, dynamic> json): super.fromJson(json) {
     name = json['name'];
     description = json['description'];
@@ -22,6 +21,7 @@ class Playlist extends SpotifyItem {
     totalTracks = json['tracks']["total"];
     tracksHref = json['tracks']["href"];
     images = json['images'].map<Image>((iJson)=> Image.fromJson(iJson)).toList();
-
   }
+
+
 }

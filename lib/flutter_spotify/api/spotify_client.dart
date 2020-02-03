@@ -78,6 +78,7 @@ class SpotifyClient {
 
   Future<void> removeTrackFromPlaylist(String trackUri, String playlistId) async {
     final token = client.credentials.accessToken;
+
     final headers = <String, String>{
       'Authorization':'Bearer $token',
       "Accept": "application/json"
@@ -90,22 +91,6 @@ class SpotifyClient {
     if (response.statusCode != 200)
       return Future.error("error: status code ${response.statusCode}");
   }
-
-Future<String> deleteWithBodyExample() async {
-  final baseUrl = "baseUrl";
-  final url = Uri.parse(baseUrl + "notes/delete");
-  final request = http.Request("DELETE", url);
-  request.headers.addAll(<String, String>{
-    "Accept": "application/json",
-    "token": "my token",
-    "jwt" : "my jwt"
-  });
-  request.body = jsonEncode({"id": 4});
-  final response = await request.send();
-  if (response.statusCode != 200)
-    return Future.error("error: status code ${response.statusCode}");
-  return await response.stream.bytesToString();
-}
 
   Future<Playlist> createPlaylist(String userID, String playlistName) async {
     final token = client.credentials.accessToken;
