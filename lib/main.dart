@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:oauth2/oauth2.dart' as oauth2;
-import 'package:spotify_manager/flutter_spotify/model/user.dart';
+import 'package:spotify/spotify_io.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'screens/home_nav.dart';
-import 'package:spotify_manager/flutter_spotify/api/spotify_client.dart';
 
 const clientId = "1f18caf5f1be400dbea59fc8e61f4502";
 const clientSecret = "bf7619c5e1c84cc89adc149f286b8d9f";
@@ -48,9 +46,7 @@ class SpotifyManager extends StatelessWidget {
 }
 
 class WelcomeScreen extends StatefulWidget {
-  static final grant = new oauth2.AuthorizationCodeGrant(
-      clientId, authorizationUrl, tokenUrl,
-      secret: clientSecret);
+  static final grant = SpotifyApi.authorizationCodeGrant(clientId, secret: clientSecret);
   static final authUrl = grant
       .getAuthorizationUrl(Uri.parse(redirectUrl), scopes: scopes)
       .toString();
@@ -60,8 +56,8 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class SpotifyContainer extends InheritedWidget {
-  final SpotifyClient client;
-  final PrivateUser myDetails;
+  final SpotifyApi client;
+  final User myDetails;
 
   SpotifyContainer({this.client, this.myDetails, Widget child}) : super(child: child);
 
@@ -83,8 +79,8 @@ class WelcomeScreenState extends State<WelcomeScreen> {
       if (uri == null || !uri.startsWith(redirectUrl))
         return;
       final authCode = uri.split("code=")[1];
-      final client = SpotifyClient(await WelcomeScreen.grant.handleAuthorizationCode(authCode));
-      final myDetails = await client.myDetails;
+      final client = SpotifyApi(await WelcomeScreen.grant.handleAuthorizationCode(authCode));
+      final myDetails = await client.users.me();
       Navigator.pushReplacement(context,
           MaterialPageRoute(builder: (context) => SpotifyContainer(
               client: client,
