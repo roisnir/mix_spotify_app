@@ -1,20 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:spotify/spotify_io.dart';
 import 'package:spotify_manager/common/project_manager/project_playlist.dart';
-import 'package:spotify_manager/flutter_spotify/api/pagination.dart';
-import 'package:spotify_manager/flutter_spotify/api/tracks.dart';
-import 'package:spotify_manager/flutter_spotify/model/base.dart';
-import 'package:spotify_manager/flutter_spotify/model/playlist.dart';
-import 'package:spotify_manager/flutter_spotify/model/user.dart';
 import 'package:spotify_manager/common/project_manager/project.dart';
-import 'package:spotify_manager/main.dart';
 import 'package:spotify_manager/common/utils.dart';
-import 'package:spotify_manager/flutter_spotify/api/spotify_client.dart';
 import 'package:spotify_manager/screens/new_playlist_dialog.dart';
 import 'form_fields.dart';
 
 class CreateProjectState extends State<CreateProject> {
-  Future<List<Playlist>> _playlists;
+  Future<List<PlaylistSimple>> _playlists;
 
   @override
   void initState() {
@@ -22,8 +18,8 @@ class CreateProjectState extends State<CreateProject> {
     _playlists = getPlaylists(widget.client);
   }
 
-  Future<List<Playlist>> getPlaylists(SpotifyClient client) async {
-    var playlists = await client.myPlaylists.toList();
+  Future<List<PlaylistSimple>> getPlaylists(SpotifyApi client) async {
+    final playlists = await client.playlists.me.all();
     return playlists.where((p) => p.owner.id == widget.myDetails.id).toList();
   }
 
@@ -58,8 +54,8 @@ class CreateProjectState extends State<CreateProject> {
 }
 
 class CreateProject extends StatefulWidget {
-  final SpotifyClient client;
-  final PrivateUser myDetails;
+  final SpotifyApi client;
+  final User myDetails;
 
   CreateProject(this.client, this.myDetails, {Key key}) : super(key: key);
 
@@ -190,20 +186,16 @@ class ProjectFormState extends State<ProjectForm> {
   }
 
   Future<Project> createSavedSongsProject() async {
-
-    final tracksPag = await widget.client.savedTracksPagination;
+    final getTracks = () => widget.client.tracks.me.saved.stream().expand((p)=>p.items).map((t)=>t.track);
+    final total = (await widget.client.tracks.me.saved.first()).metadata.total;
     List<ProjectPlaylist> playlists = <ProjectPlaylist>[];
     final temp = widget.playlists
         .asMap()
         .entries
-        .where((e) => selectedPlaylists[e.key]);
+        .where((e) => selectedPlaylists[e.key]).toList();
     for (var p in temp)
       playlists.add(await getProjectPlaylist(p.value, widget.client));
-
-    return Project(projectName, tracksPag.paging.total,(){
-      final pagClone = SavedTracksPagination(widget.client, PagingObject.fromPagingObject(tracksPag.paging));
-        return pagClone.stream.map((t) => t.track);
-        }, playlists);
+    return Project(projectName, total,getTracks, playlists);
   }
 
   Widget get pageName {
@@ -343,9 +335,9 @@ class ProjectFormState extends State<ProjectForm> {
 }
 
 class ProjectForm extends StatefulWidget {
-  final SpotifyClient client;
+  final SpotifyApi client;
   final User myDetails;
-  final List<Playlist> playlists;
+  final List<PlaylistSimple> playlists;
   final templates = <ProjectTemplate>[
     ProjectTemplate(
         "Liked Songs",

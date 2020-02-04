@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:spotify_manager/flutter_spotify/api/spotify_client.dart';
+import 'package:spotify/spotify_io.dart';
 
 class NewPlaylistDialog extends StatefulWidget {
-  final SpotifyClient client;
+  final SpotifyApi client;
   final String userId;
 
   NewPlaylistDialog(this.client, this.userId);
@@ -38,7 +38,7 @@ class _NewPlaylistDialogState extends State<NewPlaylistDialog> {
                   if (!_formKey.currentState.validate())
                     return;
                   _formKey.currentState.save();
-                  widget.client.createPlaylist(widget.userId, playlistName).then((playlist){
+                  widget.client.playlists.createPlaylist(widget.userId, playlistName).then((playlist){
                     Navigator.of(context).pop(playlist);
                   }, onError: (e){
                     setState(() {
