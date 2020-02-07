@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:spotify_manager/flutter_spotify/model/playlist.dart';
+import 'package:spotify/spotify_io.dart' as spotify;
 
 class ProjectTemplate{
   final String title;
@@ -86,7 +86,7 @@ class PlaylistsSelection extends FormField<List<bool>> {
   PlaylistsSelection({
     Key key,
                        ThemeData theme,
-                            @required List<Playlist> playlists,
+                            @required List<spotify.PlaylistSimple> playlists,
                              Function(List<bool>) onChanged,
                              FormFieldSetter<List<bool>> onSaved,
                            FormFieldValidator<List<bool>> validator,
@@ -96,7 +96,7 @@ class PlaylistsSelection extends FormField<List<bool>> {
           autovalidate: autoValidate,
           builder:(FormFieldState<List<bool>> state) => build(state, theme, playlists, onChanged));
 
-  static Widget build(FormFieldState<List<bool>> state, ThemeData theme, List<Playlist> playlists, Function(List<bool>) onChanged){
+  static Widget build(FormFieldState<List<bool>> state, ThemeData theme, List<spotify.PlaylistSimple> playlists, Function(List<bool>) onChanged){
     final buttons = List<Widget>();
     final selectedPlaylists = state.value;
     for (int i = 0; i < playlists.length; i++) {

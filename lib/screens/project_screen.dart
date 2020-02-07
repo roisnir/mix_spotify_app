@@ -1,14 +1,10 @@
 import 'dart:async';
-import 'dart:ffi';
 import 'package:audioplayer/audioplayer.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'package:spotify/spotify_io.dart' hide Image;
 import 'package:spotify_manager/common/project_manager/project.dart';
-import 'package:spotify_manager/flutter_spotify/api/spotify_client.dart';
-import 'package:spotify_manager/flutter_spotify/model/track.dart';
-import 'package:spotify_manager/flutter_spotify/model/user.dart';
-import 'package:spotify_manager/main.dart';
 import 'package:spotify_manager/screens/create_project/form_fields.dart';
 import 'package:spotify_manager/common/utils.dart';
 import 'package:marquee/marquee.dart';
@@ -64,12 +60,12 @@ class ProjectScreenState extends State<ProjectScreen>
       final playlist = playlists[i];
       if ((!initialPlaylists[i] && curSelectedPlaylists[i])) {
         print("adding ${track.name} -> ${playlist.playlist.name}");
-        await client.addTrackToPlaylist(track.uri, playlist.playlist.id);
+        await client.playlists.addTrack(track.uri, playlist.playlist.id);
         playlist.trackIds.add(track.id);
       }
       if (initialPlaylists[i] && !curSelectedPlaylists[i]) {
         print("removing ${track.name} -> ${playlist.playlist.name}");
-        await client.removeTrackFromPlaylist(track.uri, playlist.playlist.id);
+        await client.playlists.removeTrack(track.uri, playlist.playlist.id);
         playlist.trackIds.remove(track.id);
       }
     }
@@ -193,7 +189,7 @@ class ProjectScreenState extends State<ProjectScreen>
 class ProjectScreen extends StatefulWidget
 {
   final Project project;
-  final SpotifyClient client;
+  final SpotifyApi client;
   final User me;
 
   ProjectScreen({Key key, @required this.project, @required this.client, @required this.me}) : super(key: key);

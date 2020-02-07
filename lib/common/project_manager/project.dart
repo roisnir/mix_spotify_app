@@ -1,6 +1,5 @@
+import 'package:spotify/spotify_io.dart';
 import 'package:spotify_manager/common/project_manager/project_playlist.dart';
-import 'package:spotify_manager/flutter_spotify/model/playlist.dart';
-import 'package:spotify_manager/flutter_spotify/model/track.dart';
 import 'package:uuid/uuid.dart';
 
 class Project
