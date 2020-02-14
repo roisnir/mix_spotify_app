@@ -20,7 +20,6 @@ class ProjectScreenState extends State<ProjectScreen>
   List<bool> selectedPlaylists;
   PageController pageController;
 
-
   @override
   void initState() {
     super.initState();
@@ -101,7 +100,9 @@ class ProjectScreenState extends State<ProjectScreen>
             if (selectedPlaylists != null)
               updatePlaylists(project.curIndex, selectedPlaylists);
             selectedPlaylists = null;
-            project.curIndex = index;
+            setState(() {
+              project.curIndex = index;
+            });
             getProjectTrack(index).then((track){
               selectedPlaylists = project.playlists.map((p)=>p.contains(track)).toList();
               curTrackUrl = track.previewUrl;
