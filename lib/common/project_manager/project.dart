@@ -21,8 +21,8 @@ class Project {
 
   Future<ProjectConfiguration> getConfig([List<String> trackIds]) async {
     trackIds = trackIds != null?trackIds:
-    await tracks.map((t)=>t.id).toList();
-    return ProjectConfiguration(name, uuid, curIndex, trackIds, playlists.map((pp)=>pp.playlist).toList());
+      await tracks.map((t)=>t.id).toList();
+    return ProjectConfiguration(name, uuid, curIndex, trackIds, playlists.map((pp)=>pp.playlist.id).toList());
   }
 
   static Future<Project> fromConfiguration(
@@ -32,10 +32,9 @@ class Project {
         config.trackIds.length,
         () => spotify.tracks.batches(config.trackIds).expand((tList)=>tList),
         await Future.wait<ProjectPlaylist>(
-          config.playlists.map((playlist) async => ProjectPlaylist(
-              playlist,
-              (await spotify.playlists.getTracksByPlaylistId(playlist.id).all())
-                  .map((t) => t.id).toList())),
+          config.playlistIds.map<Future<ProjectPlaylist>>((playlistId) async =>
+              ProjectPlaylist.fromPlaylist(
+                  await spotify.playlists.get(playlistId), spotify))
         ),
         config.curIndex,
         config.uuid

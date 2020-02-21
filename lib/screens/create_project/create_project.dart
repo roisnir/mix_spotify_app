@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:spotify/spotify_io.dart';
+import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/project_manager/project_playlist.dart';
 import 'package:spotify_manager/common/project_manager/project.dart';
+import 'package:spotify_manager/common/project_manager/projects_db.dart';
 import 'package:spotify_manager/common/utils.dart';
 import 'package:spotify_manager/screens/new_playlist_dialog.dart';
 import 'form_fields.dart';
@@ -185,17 +187,24 @@ class ProjectFormState extends State<ProjectForm> {
         ));
   }
 
-  Future<Project> createSavedSongsProject() async {
-    final getTracks = () => widget.client.tracks.me.saved.stream().expand((p)=>p.items).map((t)=>t.track);
-    final total = (await widget.client.tracks.me.saved.first()).metadata.total;
-    List<ProjectPlaylist> playlists = <ProjectPlaylist>[];
-    final temp = widget.playlists
+  Future<ProjectConfiguration> createSavedSongsProject() async {
+//    final getTracks = () => widget.client.tracks.me.saved.stream().expand((p)=>p.items).map((t)=>t.track);
+//    final total = (await widget.client.tracks.me.saved.first()).metadata.total;
+//    final playlists = Future.wait(widget.playlists
+//        .asMap()
+//        .entries
+//        .where((e) => selectedPlaylists[e.key])
+//        .map((entry)=>widget.client.playlists.get(entry.value.id)));
+    final tracksIds = (await widget.client.tracks.me.saved.all()).map((t)=>t.track.id).toList();
+    final playlistIds = widget.playlists
         .asMap()
         .entries
-        .where((e) => selectedPlaylists[e.key]).toList();
-    for (var p in temp)
-      playlists.add(await getProjectPlaylist(p.value, widget.client));
-    return Project(projectName, total,getTracks, playlists);
+        .where((e) => selectedPlaylists[e.key])
+        .map((entry)=>entry.value.id).toList();
+    final project = ProjectConfiguration.init(projectName, tracksIds, playlistIds);
+    ProjectsDB().insertProject(project);
+    return project;
+//    return Project(projectName, total, getTracks, await playlists);
   }
 
   Widget get pageName {
@@ -229,7 +238,9 @@ class ProjectFormState extends State<ProjectForm> {
 
               onPressed: () async {
                 pagesKeys.last.currentState.save();
-                Navigator.pop(context, await createSavedSongsProject());
+                ProjectConfiguration newProject = await showDialog(context: context,barrierDismissible: false,
+                    child: ProgressIndicatorPopup(createSavedSongsProject));
+                Navigator.pop(context, newProject);
               },
               padding: EdgeInsets.symmetric(vertical: 25, horizontal: 50),
               shape: RoundedRectangleBorder(
