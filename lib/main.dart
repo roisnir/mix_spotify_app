@@ -46,7 +46,7 @@ class SpotifyManager extends StatelessWidget {
 }
 
 class WelcomeScreen extends StatefulWidget {
-  static final grant = SpotifyApi.authorizationCodeGrant(clientId, secret: clientSecret);
+  static final grant = SpotifyApi.authorizationCodeGrant(SpotifyApiCredentials(clientId, clientSecret));
   static final authUrl = grant
       .getAuthorizationUrl(Uri.parse(redirectUrl), scopes: scopes)
       .toString();
@@ -78,8 +78,7 @@ class WelcomeScreenState extends State<WelcomeScreen> {
     _sub = getLinksStream().listen((String uri) async {
       if (uri == null || !uri.startsWith(redirectUrl))
         return;
-      final authCode = uri.split("code=")[1];
-      final client = SpotifyApi(await WelcomeScreen.grant.handleAuthorizationCode(authCode));
+      final client = SpotifyApi.fromAuthCodeGrant(WelcomeScreen.grant, uri);
       final myDetails = await client.users.me();
       Navigator.pushReplacement(context,
           MaterialPageRoute(builder: (context) => SpotifyContainer(

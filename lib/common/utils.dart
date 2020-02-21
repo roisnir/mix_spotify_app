@@ -69,6 +69,7 @@ extension PageViewNavigation on PageController {
   }
 }
 
+
 extension IterTools<T> on Iterable<T> {
 //  Iterable<> enumerate(){
 //
@@ -85,6 +86,40 @@ extension DictTools<T1, T2> on Map<T1,T2> {
 
 extension DoubleTools on double {
   bool isInt() => this == this.roundToDouble();
+}
+
+
+class ProgressIndicatorPopup extends StatefulWidget {
+  final Future Function() process;
+
+  ProgressIndicatorPopup(this.process);
+
+  @override
+  _ProgressIndicatorPopupState createState() => _ProgressIndicatorPopupState();
+}
+
+class _ProgressIndicatorPopupState extends State<ProgressIndicatorPopup> {
+
+  @override
+  void initState() {
+    super.initState();
+    widget.process().then((returnValue)=>Navigator.of(context).pop(returnValue));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(child: Column(mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        SizedBox(width: 50, height: 50,
+            child: CircularProgressIndicator(backgroundColor: Colors.transparent,)),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text("saving..."),
+        )
+      ],
+    ),
+      backgroundColor: Colors.transparent,);
+  }
 }
 
 
