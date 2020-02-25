@@ -89,6 +89,8 @@ class WelcomeScreenState extends State<WelcomeScreen> {
       throw "invalid redirect uri";
     try {
       final client = SpotifyApi.fromAuthCodeGrant(WelcomeScreen.grant, uri);
+      // TODO: save refresh token
+
       final myDetails = await client.users.me();
       navigateToApp(client, myDetails);
     }

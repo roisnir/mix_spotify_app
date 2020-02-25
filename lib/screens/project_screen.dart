@@ -83,36 +83,42 @@ class ProjectScreenState extends State<ProjectScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: SimpleFutureBuilder(projectFuture,
-          (context, project)=>Column(
+          (context, project)=>WillPopScope(
+            onWillPop: () async {
+              Navigator.of(context).pop((await projectFuture).curIndex);
+              return false;
+            },
+            child: Column(
       children: buildButtonsTopBar() + <Widget>[
         buildBody(project),
         Padding(
-          padding: const EdgeInsets.only(left: 40, right: 40, top: 20, bottom: 40),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              IconButton(
-                padding: EdgeInsets.all(0),
-                iconSize: 56,
-                icon: Icon(Icons.skip_previous),
-                onPressed: () {
-                  pageController.prevPageSimple();
-                },
-              ),
-              IconButton(
-                padding: EdgeInsets.all(0),
-                iconSize: 56,
-                icon: Icon(Icons.skip_next),
-                onPressed: () {
-                  pageController.nextPageSimple();
-                },
-              ),
-            ],
-          ),
+            padding: const EdgeInsets.only(left: 40, right: 40, top: 20, bottom: 40),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                IconButton(
+                  padding: EdgeInsets.all(0),
+                  iconSize: 56,
+                  icon: Icon(Icons.skip_previous),
+                  onPressed: () {
+                    pageController.prevPageSimple();
+                  },
+                ),
+                IconButton(
+                  padding: EdgeInsets.all(0),
+                  iconSize: 56,
+                  icon: Icon(Icons.skip_next),
+                  onPressed: () {
+                    pageController.nextPageSimple();
+                  },
+                ),
+              ],
+            ),
         ),
         buildPercentIndicator(project)
       ],
     ),
+          ),
         ));
   }
 
@@ -127,8 +133,8 @@ class ProjectScreenState extends State<ProjectScreen> {
           icon: Icon(
             Icons.keyboard_arrow_down,
           ),
-          onPressed: () {
-            Navigator.of(context).pop();
+          onPressed: () async {
+            Navigator.of(context).pop((await projectFuture).curIndex);
           },
         ),
         IconButton(
@@ -158,7 +164,7 @@ class ProjectScreenState extends State<ProjectScreen> {
       controller: pageController,
       itemCount: project.totalTracks,
       onPageChanged: (index) {
-        projectsDB.updateIndex(project.uuid, index);
+        projectsDB.updateIndex(project.uuid, index).whenComplete(() => print("updated index"));
         if (selectedPlaylists != null)
           updatePlaylists(project.curIndex, selectedPlaylists);
         selectedPlaylists = null;
