@@ -7,7 +7,6 @@ import 'package:spotify/spotify_io.dart' hide Image;
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/project_manager/project.dart';
 import 'package:spotify_manager/common/project_manager/projects_db.dart';
-import 'package:spotify_manager/common/project_manager/project_playlist.dart';
 import 'package:spotify_manager/screens/create_project/form_fields.dart';
 import 'package:spotify_manager/common/utils.dart';
 import 'package:marquee/marquee.dart';
@@ -83,36 +82,42 @@ class ProjectScreenState extends State<ProjectScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: SimpleFutureBuilder(projectFuture,
-          (context, project)=>Column(
+          (context, project)=>WillPopScope(
+            onWillPop: () async {
+              Navigator.of(context).pop((await projectFuture).curIndex);
+              return false;
+            },
+            child: Column(
       children: buildButtonsTopBar() + <Widget>[
         buildBody(project),
         Padding(
-          padding: const EdgeInsets.only(left: 40, right: 40, top: 20, bottom: 40),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              IconButton(
-                padding: EdgeInsets.all(0),
-                iconSize: 56,
-                icon: Icon(Icons.skip_previous),
-                onPressed: () {
-                  pageController.prevPageSimple();
-                },
-              ),
-              IconButton(
-                padding: EdgeInsets.all(0),
-                iconSize: 56,
-                icon: Icon(Icons.skip_next),
-                onPressed: () {
-                  pageController.nextPageSimple();
-                },
-              ),
-            ],
-          ),
+            padding: const EdgeInsets.only(left: 40, right: 40, top: 20, bottom: 40),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                IconButton(
+                  padding: EdgeInsets.all(0),
+                  iconSize: 56,
+                  icon: Icon(Icons.skip_previous),
+                  onPressed: () {
+                    pageController.prevPageSimple();
+                  },
+                ),
+                IconButton(
+                  padding: EdgeInsets.all(0),
+                  iconSize: 56,
+                  icon: Icon(Icons.skip_next),
+                  onPressed: () {
+                    pageController.nextPageSimple();
+                  },
+                ),
+              ],
+            ),
         ),
         buildPercentIndicator(project)
       ],
     ),
+          ),
         ));
   }
 
@@ -127,8 +132,8 @@ class ProjectScreenState extends State<ProjectScreen> {
           icon: Icon(
             Icons.keyboard_arrow_down,
           ),
-          onPressed: () {
-            Navigator.of(context).pop();
+          onPressed: () async {
+            Navigator.of(context).pop((await projectFuture).curIndex);
           },
         ),
         IconButton(
@@ -158,7 +163,7 @@ class ProjectScreenState extends State<ProjectScreen> {
       controller: pageController,
       itemCount: project.totalTracks,
       onPageChanged: (index) {
-        projectsDB.updateIndex(project.uuid, index);
+        projectsDB.updateIndex(project.uuid, index).whenComplete(() => print("updated index"));
         if (selectedPlaylists != null)
           updatePlaylists(project.curIndex, selectedPlaylists);
         selectedPlaylists = null;
@@ -180,7 +185,7 @@ class ProjectScreenState extends State<ProjectScreen> {
               final a = TextPainter(
                   text: TextSpan(
                       text: track.name,
-                      style: Theme.of(context).textTheme.headline),
+                      style: Theme.of(context).textTheme.headline5),
                   maxLines: 1,
                   textDirection: TextDirection.ltr);
               a.layout(maxWidth: MediaQuery.of(context).size.width * 0.8);
@@ -222,13 +227,13 @@ class ProjectScreenState extends State<ProjectScreen> {
                 )
                     : Text(
                   track.name,
-                  style: Theme.of(context).textTheme.headline,
+                  style: Theme.of(context).textTheme.headline5,
                   overflow: TextOverflow.fade,
                   softWrap: false,
                 ),
                 Text(
                   track.artists[0].name,
-                  style: Theme.of(context).textTheme.subhead.copyWith(
+                  style: Theme.of(context).textTheme.subtitle1.copyWith(
                       color: Theme.of(context).textTheme.caption.color),
                 ),
                 Expanded(
@@ -253,7 +258,7 @@ class ProjectScreenState extends State<ProjectScreen> {
     ),
   );
 
-  buildPercentIndicator(Project project) => new LinearPercentIndicator( // TODO: move future builder to column
+  buildPercentIndicator(Project project) => new LinearPercentIndicator(
     padding: EdgeInsets.symmetric(horizontal: 20),
     lineHeight: 30.0,
     center: Text(

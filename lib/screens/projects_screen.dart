@@ -26,7 +26,7 @@ class ProjectsScreenState extends State<ProjectsScreen> {
   }
 
   Future<List<ProjectConfiguration>> loadProjects() async {
-    final db = ProjectsDB(); // TODO: not working
+    final db = ProjectsDB();
     final projects = List<ProjectConfiguration>.from(await db.getProjectsConf());
     db.close();
     return projects;
@@ -37,19 +37,27 @@ class ProjectsScreenState extends State<ProjectsScreen> {
     return ListTile(
       title: Text(project.name),
       leading: Icon(Icons.album),
-      trailing: SizedBox(
-        width: 150,
-        child: LinearPercentIndicator(
-          lineHeight: 20.0,
-          center: Text("${(project.curIndex / project.trackIds.length * 100).toStringAsFixed(1)}%"),
-          percent: project.curIndex / project.trackIds.length,
-          backgroundColor: Colors.grey,
-          progressColor: Colors.green,
-        ),
-      )
+      //          SizedBox(
+//            width: 150,
+//            child: LinearPercentIndicator(
+//              lineHeight: 20.0,
+//              center: Text("${(project.curIndex / project.trackIds.length * 100).toStringAsFixed(1)}%"),
+//              percent: project.curIndex / project.trackIds.length,
+//              backgroundColor: Colors.grey,
+//              progressColor: Colors.green,
+//            ),
+//          ),
+      trailing: PopupMenuButton(itemBuilder: (c) => [PopupMenuItem(value: 1, child: Text('Delete'),)],onSelected: (v) async {
+        setState(() {
+          _projects.remove(project);
+        });
+        final db = ProjectsDB();
+        await db.removeProject(project.uuid);
+        db.close();
+      }, )
       ,
-      onTap: () {
-        Navigator.of(context)
+      onTap: () async {
+        int index = await Navigator.of(context)
             .push(MaterialPageRoute(builder: (BuildContext subContext) {
           return ProjectScreen(
             projectConfig: project,
@@ -57,6 +65,9 @@ class ProjectsScreenState extends State<ProjectsScreen> {
             me: SpotifyContainer.of(context).myDetails,
           );
         }));
+        setState(() {
+          project.curIndex = index;
+        });
       },
     );
   }

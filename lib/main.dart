@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:spotify/spotify_io.dart';
-import 'package:uni_links/uni_links.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'screens/home_nav.dart';
 
 const clientId = "1f18caf5f1be400dbea59fc8e61f4502";
@@ -45,16 +44,6 @@ class SpotifyManager extends StatelessWidget {
 
 }
 
-class WelcomeScreen extends StatefulWidget {
-  static final grant = SpotifyApi.authorizationCodeGrant(SpotifyApiCredentials(clientId, clientSecret));
-  static final authUrl = grant
-      .getAuthorizationUrl(Uri.parse(redirectUrl), scopes: scopes)
-      .toString();
-
-  @override
-  State<StatefulWidget> createState() => WelcomeScreenState();
-}
-
 class SpotifyContainer extends InheritedWidget {
   final SpotifyApi client;
   final User myDetails;
@@ -69,60 +58,95 @@ class SpotifyContainer extends InheritedWidget {
 
 }
 
+class WelcomeScreen extends StatefulWidget {
+  static final grant = SpotifyApi.authorizationCodeGrant(SpotifyApiCredentials(clientId, clientSecret));
+  static final authUrl = grant
+      .getAuthorizationUrl(Uri.parse(redirectUrl), scopes: scopes)
+      .toString();
+
+  @override
+  State<StatefulWidget> createState() => WelcomeScreenState();
+}
+
 class WelcomeScreenState extends State<WelcomeScreen> {
-  StreamSubscription _sub;
+  bool shouldShowWebView = false;
+  Key webViewKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    _sub = getLinksStream().listen((String uri) async {
-      if (uri == null || !uri.startsWith(redirectUrl))
-        return;
+    tryLoginWithRefreshToken().then((value) => setState(
+            ()=>shouldShowWebView = !value));
+  }
+
+  Future<bool> tryLoginWithRefreshToken() async {
+    // TODO: impl loginWithRefreshToken
+    return false;
+  }
+
+  handleRedirect(String uri) async {
+    if (uri == null || !uri.startsWith(redirectUrl))
+      throw "invalid redirect uri";
+    try {
       final client = SpotifyApi.fromAuthCodeGrant(WelcomeScreen.grant, uri);
+      // TODO: save refresh token
+
       final myDetails = await client.users.me();
-      Navigator.pushReplacement(context,
-          MaterialPageRoute(builder: (context) => SpotifyContainer(
-              client: client,
-              myDetails: myDetails,
-              child: HomeNav())));
-    });
+      navigateToApp(client, myDetails);
+    }
+    on StateError{
+    }
+  }
 
-    launch(WelcomeScreen.authUrl, forceSafariVC: false);
-
+  navigateToApp(SpotifyApi client, User myDetails){
+    Navigator.pushReplacement(context,
+        MaterialPageRoute(builder: (context) => SpotifyContainer(
+            client: client,
+            myDetails: myDetails,
+            child: HomeNav())));
   }
 
   @override
   Widget build(BuildContext context) {
-    return WelcomeBody();
+    final widgets = <Widget>[
+      Container(
+        color: Theme.of(context).backgroundColor,
+        child: Center(
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+              Text("Welcome to Spotify Manager!\r\nWe'll start right away!", textAlign: TextAlign.center, style: Theme.of(context).textTheme.subtitle1,),
+                  Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: SizedBox(width: 70, height: 70,child: CircularProgressIndicator()),
+              ),
+            ])),
+      ),
+      WebView(
+        key: webViewKey,
+        initialUrl: WelcomeScreen.authUrl,
+        javascriptMode: JavascriptMode.unrestricted,
+        navigationDelegate: (navReq) {
+          if (!navReq.url.startsWith(redirectUrl))
+            return NavigationDecision.navigate;
+          setState(() {
+            shouldShowWebView = false;
+          });
+          handleRedirect(navReq.url);
+          return NavigationDecision.navigate;
+        },
+      )
+    ];
+    if (!shouldShowWebView)
+      widgets.insert(0, widgets.removeLast());
+    return Scaffold(
+      body: Stack(children: widgets,)
+    );
   }
 
   @override
   void dispose() {
-    _sub.cancel();
+//    _sub.cancel();
     super.dispose();
-  }
-}
-
-class WelcomeBody extends StatelessWidget {
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Spotify Manager'),
-      ),
-      body: Center(
-          child: Column(children: <Widget>[
-        Text("Welcome to Spotify Manager!\r\nPlease login to start"),
-        MaterialButton(
-          child: Text("LOGIN"),
-          onPressed: () async {
-            final authUrl = WelcomeScreen.authUrl;
-            await launch(authUrl, forceSafariVC: false);
-          },
-          color: Colors.green,
-        ),
-      ])),
-    );
   }
 }

@@ -202,7 +202,7 @@ class ProjectFormState extends State<ProjectForm> {
         .where((e) => selectedPlaylists[e.key])
         .map((entry)=>entry.value.id).toList();
     final project = ProjectConfiguration.init(projectName, tracksIds, playlistIds);
-    ProjectsDB().insertProject(project);
+    await ProjectsDB().insertProject(project);
     return project;
 //    return Project(projectName, total, getTracks, await playlists);
   }

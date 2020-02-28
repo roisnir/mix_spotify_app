@@ -10,6 +10,7 @@ class ProjectsDB {
 
   ProjectsDB(){
     _db = () async {
+//        await deleteDatabase(dbName);
         return await openDatabase(dbName, version: 1, onCreate: (db, v){
           print("creating DB...");
           db.execute('CREATE TABLE $projectsTable('
@@ -20,14 +21,14 @@ class ProjectsDB {
               'isActive INTEGER'
               ')');
           db.execute('CREATE TABLE $tracksTable('
-              'trackId TEXT PRIMARY KEY,'
+              'trackId TEXT,'
               'projectUuid TEXT'
               ')');
         });
   }();
   }
 
-  insertProject(ProjectConfiguration project) async {
+  Future<void> insertProject(ProjectConfiguration project) async {
     final batch = (await _db).batch();
     final projectJson = project.toJson();
     List<String> trackIds = projectJson.remove('trackIds');
@@ -42,12 +43,15 @@ class ProjectsDB {
     print(await (await _db).query(projectsTable));
   }
 
-  updateIndex(String projectUuid, int index) async {
+  Future<void> updateIndex(String projectUuid, int index) async {
     await (await _db).update(projectsTable, {'curIndex': index}, where: "uuid = ?", whereArgs: [projectUuid]);
   }
 
   removeProject(String projectUuid) async {
-    // TODO: implement remove
+    final batch = (await _db).batch();
+    batch.delete(projectsTable, where:'uuid = ?', whereArgs: [projectUuid]);
+    batch.delete(tracksTable, where:'projectUuid = ?', whereArgs: [projectUuid]);
+    await batch.commit();
   }
 
   Future<List<ProjectConfiguration>> getProjectsConf() async {
