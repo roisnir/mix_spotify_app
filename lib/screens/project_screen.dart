@@ -7,7 +7,6 @@ import 'package:spotify/spotify_io.dart' hide Image;
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/project_manager/project.dart';
 import 'package:spotify_manager/common/project_manager/projects_db.dart';
-import 'package:spotify_manager/common/project_manager/project_playlist.dart';
 import 'package:spotify_manager/screens/create_project/form_fields.dart';
 import 'package:spotify_manager/common/utils.dart';
 import 'package:marquee/marquee.dart';
@@ -186,7 +185,7 @@ class ProjectScreenState extends State<ProjectScreen> {
               final a = TextPainter(
                   text: TextSpan(
                       text: track.name,
-                      style: Theme.of(context).textTheme.headline),
+                      style: Theme.of(context).textTheme.headline5),
                   maxLines: 1,
                   textDirection: TextDirection.ltr);
               a.layout(maxWidth: MediaQuery.of(context).size.width * 0.8);
@@ -228,13 +227,13 @@ class ProjectScreenState extends State<ProjectScreen> {
                 )
                     : Text(
                   track.name,
-                  style: Theme.of(context).textTheme.headline,
+                  style: Theme.of(context).textTheme.headline5,
                   overflow: TextOverflow.fade,
                   softWrap: false,
                 ),
                 Text(
                   track.artists[0].name,
-                  style: Theme.of(context).textTheme.subhead.copyWith(
+                  style: Theme.of(context).textTheme.subtitle1.copyWith(
                       color: Theme.of(context).textTheme.caption.color),
                 ),
                 Expanded(
@@ -259,7 +258,7 @@ class ProjectScreenState extends State<ProjectScreen> {
     ),
   );
 
-  buildPercentIndicator(Project project) => new LinearPercentIndicator( // TODO: move future builder to column
+  buildPercentIndicator(Project project) => new LinearPercentIndicator(
     padding: EdgeInsets.symmetric(horizontal: 20),
     lineHeight: 30.0,
     center: Text(
