@@ -1,11 +1,9 @@
 import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:spotify/spotify_io.dart';
 import 'package:spotify_manager/common/project_manager/model/project.dart';
-import 'package:spotify_manager/common/project_manager/project_playlist.dart';
-import 'package:spotify_manager/common/project_manager/project.dart';
+import 'package:spotify_manager/common/project_manager/project_template.dart';
 import 'package:spotify_manager/common/project_manager/projects_db.dart';
 import 'package:spotify_manager/common/utils.dart';
 import 'package:spotify_manager/screens/new_playlist_dialog.dart';
@@ -188,13 +186,6 @@ class ProjectFormState extends State<ProjectForm> {
   }
 
   Future<ProjectConfiguration> createSavedSongsProject() async {
-//    final getTracks = () => widget.client.tracks.me.saved.stream().expand((p)=>p.items).map((t)=>t.track);
-//    final total = (await widget.client.tracks.me.saved.first()).metadata.total;
-//    final playlists = Future.wait(widget.playlists
-//        .asMap()
-//        .entries
-//        .where((e) => selectedPlaylists[e.key])
-//        .map((entry)=>widget.client.playlists.get(entry.value.id)));
     final tracksIds = (await widget.client.tracks.me.saved.all()).map((t)=>t.track.id).toList();
     final playlistIds = widget.playlists
         .asMap()
@@ -204,7 +195,6 @@ class ProjectFormState extends State<ProjectForm> {
     final project = ProjectConfiguration.init(projectName, tracksIds, playlistIds);
     await ProjectsDB().insertProject(project);
     return project;
-//    return Project(projectName, total, getTracks, await playlists);
   }
 
   Widget get pageName {
@@ -233,7 +223,7 @@ class ProjectFormState extends State<ProjectForm> {
             child: RaisedButton(
               child: Text(
                 "Let's Start!",
-                style: Theme.of(context).textTheme.title,
+                style: Theme.of(context).textTheme.headline6,
               ),
 
               onPressed: () async {
@@ -257,7 +247,7 @@ class ProjectFormState extends State<ProjectForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text("Choose Playlists", style: theme.textTheme.display1),
+        Text("Choose Playlists", style: theme.textTheme.headline4),
         Stack(
           children: <Widget>[
             Padding(
@@ -305,7 +295,7 @@ class ProjectFormState extends State<ProjectForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text("Choose Template", style: theme.textTheme.display1),
+        Text("Choose Template", style: theme.textTheme.headline4),
         Padding(
           padding: const EdgeInsets.only(top: 4, bottom: 20),
           child: Text(
@@ -352,7 +342,7 @@ class ProjectForm extends StatefulWidget {
   final templates = <ProjectTemplate>[
     ProjectTemplate(
         "Liked Songs",
-        "Iterate over every song you have ever liked and sort thme to your playlists",
+        "Go through every song you have ever liked and sort them to your playlists",
         Icons.favorite),
     ProjectTemplate(
         "Discover",
@@ -360,7 +350,7 @@ class ProjectForm extends StatefulWidget {
         Icons.explore),
     ProjectTemplate(
         "Extend",
-        "Choose existing playlist, get recommendations based on tracks in the playlists and sort them to your playlists",
+        "Choose existing playlists, get recommendations based on their tracks and sort them to your playlists",
         Icons.all_out),
     ProjectTemplate(
         "Maintain",

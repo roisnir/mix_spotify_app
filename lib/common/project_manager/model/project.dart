@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'package:spotify/spotify_io.dart';
 import 'package:uuid/uuid.dart';
 
 class ProjectConfiguration {

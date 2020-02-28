@@ -1,12 +1,8 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/project_manager/projects_db.dart';
 import 'package:spotify_manager/main.dart';
-import 'package:spotify_manager/common/project_manager/project.dart';
 import 'package:spotify_manager/screens/create_project/create_project.dart';
 import 'project_screen.dart';
 
