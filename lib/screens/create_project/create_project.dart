@@ -69,7 +69,6 @@ class ProjectFormState extends State<ProjectForm> {
   List<bool> selectedPlaylists;
   Map<int, bool> pagesState = Map<int, bool>();
   ProjectTemplate selectedTemplate;
-  bool showOnlyUnsorted = false;
   double prevPage = 0;
   String projectName;
 
@@ -253,7 +252,7 @@ class ProjectFormState extends State<ProjectForm> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Text(
-                "You will add songs to theme playlists trough the project",
+                "You will add songs to those playlists trough the project",
                 style: theme.textTheme.caption,
               ),
             ),

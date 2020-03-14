@@ -6,6 +6,4 @@ class ProjectTemplate {
   final IconData icon;
 
   ProjectTemplate(this.title, this.description, this.icon);
-
-
 }
