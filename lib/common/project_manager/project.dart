@@ -30,7 +30,7 @@ class Project {
     return Project(
         config.name,
         config.trackIds.length,
-        () => spotify.tracks.batches(config.trackIds).expand((tList)=>tList),
+        () => spotify.tracks.tracksStream(config.trackIds),
         await Future.wait<ProjectPlaylist>(
           config.playlistIds.map<Future<ProjectPlaylist>>((playlistId) async =>
               ProjectPlaylist.fromPlaylist(
