@@ -184,7 +184,7 @@ class ProjectFormState extends State<ProjectForm> {
         ));
   }
 
-  Future<ProjectConfiguration> createSavedSongsProject() async {
+  Future<ProjectConfiguration> createSavedSongsProject() async { // TODO: use external createProject
     final tracksIds = (await widget.client.tracks.me.saved.all()).map((t)=>t.track.id).toList();
     final playlistIds = widget.playlists
         .asMap()
