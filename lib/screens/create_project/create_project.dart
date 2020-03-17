@@ -95,7 +95,7 @@ class ProjectFormState extends State<ProjectForm> {
 
   @override
   Widget build(BuildContext context) {
-    final pagesWidgets = <Widget>[pageTemplate, pagePlaylists, pageName];
+    final pagesWidgets = <Widget>[pagePlaylists, pageName];
     final pages = <Widget>[];
     for (int i = 0; i < pagesWidgets.length; i++)
       pages.add(Form(key: pagesKeys[i], child: pagesWidgets[i]));
@@ -288,75 +288,12 @@ class ProjectFormState extends State<ProjectForm> {
     );
   }
 
-  Widget get pageTemplate {
-    final theme = Theme.of(context);
-    final templates = widget.templates;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text("Choose Template", style: theme.textTheme.headline4),
-        Padding(
-          padding: const EdgeInsets.only(top: 4, bottom: 20),
-          child: Text(
-            "What kind of project would you like to start?",
-            style: theme.textTheme.caption,
-          ),
-        ),
-        Expanded(
-          child: ProjectTemplateSelection(
-            theme: theme,
-            templates: templates,
-            validator: (int i) => i == null ? "please select template" : null,
-            onChanged: (int i) {
-              setState(() {
-                selectedTemplate = templates[i];
-              });
-              controller.nextPageSimple();
-            },
-          ),
-        ),
-//        Row(
-//          crossAxisAlignment: CrossAxisAlignment.center,
-//          children: <Widget>[
-//            Checkbox(
-//              activeColor: theme.primaryColor,
-//              value: showOnlyUnsorted,
-//              onChanged: (val){setState(() {
-//              showOnlyUnsorted = val;
-//            });},),
-//            Text("Show only unsorted tracks"),
-//            Tooltip(child: Icon(Icons.info), message: "songs that included in one of your playlists",)
-//
-//          ],
-//        )
-      ],
-    );
-  }
 }
 
 class ProjectForm extends StatefulWidget {
   final SpotifyApi client;
   final User myDetails;
   final List<PlaylistSimple> playlists;
-  final templates = <ProjectTemplate>[
-    ProjectTemplate(
-        "Liked Songs",
-        "Go through every song you have ever liked and sort them to your playlists",
-        Icons.favorite),
-    ProjectTemplate(
-        "Discover",
-        "Choose tracks you like, get recommendations based on them and sort them to your playlists",
-        Icons.explore),
-    ProjectTemplate(
-        "Extend",
-        "Choose existing playlists, get recommendations based on their tracks and sort them to your playlists",
-        Icons.all_out),
-    ProjectTemplate(
-        "Maintain",
-        "Work on tracks that not included in any of your playlists",
-        Icons.build),
-  ];
-
   ProjectForm(this.playlists, this.client, this.myDetails, {Key key}) : super(key: key);
 
   @override
