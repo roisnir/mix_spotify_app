@@ -45,6 +45,8 @@ class _CreateProjectState extends State<CreateProject> {
     prevPage = controller.page;
   }
 
+  int get curPage => controller.hasClients ? controller.page.round() : null;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,7 +61,7 @@ class _CreateProjectState extends State<CreateProject> {
   }
 
   Widget pageView() {
-    return Column(children: [
+    final colChildren = [
       Expanded(child: PageView(
         children: configPages.map<Form>((e) => e.build()).toList(growable: false),
         controller: controller,
@@ -71,7 +73,10 @@ class _CreateProjectState extends State<CreateProject> {
           });
         },
       ),)
-    ],);
+    ];
+    if (curPage != configPages.length - 1)
+      colChildren.add(bottomBar());
+    return Column(children: colChildren,);
   }
 
   Widget topBar(BuildContext context) => Row(
@@ -86,6 +91,22 @@ class _CreateProjectState extends State<CreateProject> {
             }
         )
       ]);
+
+  Widget bottomBar() => Padding(
+    padding: const EdgeInsets.all(20),
+    child: Align(
+      alignment: AlignmentDirectional.bottomEnd,
+      child: RaisedButton(
+        padding: EdgeInsets.all(12),
+        color: Theme.of(context).primaryColor,
+        child: Text(
+          "Next",
+          style: Theme.of(context).textTheme.button,
+        ),
+        onPressed: () => controller.nextPageSimple(),
+      ),
+    ),
+  );
 }
 
 
