@@ -1,301 +1,79 @@
 import 'dart:async';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:spotify/spotify_io.dart';
-import 'package:spotify_manager/common/project_manager/model/project.dart';
-import 'package:spotify_manager/common/project_manager/project_template.dart';
-import 'package:spotify_manager/common/project_manager/projects_db.dart';
 import 'package:spotify_manager/common/utils.dart';
-import 'package:spotify_manager/screens/new_playlist_dialog.dart';
-import 'form_fields.dart';
+import 'package:spotify_manager/screens/create_project/config_page.dart';
 
-class CreateProjectState extends State<CreateProject> {
-  Future<List<PlaylistSimple>> _playlists;
-
-  @override
-  void initState() {
-    super.initState();
-    _playlists = getPlaylists(widget.client);
-  }
-
-  Future<List<PlaylistSimple>> getPlaylists(SpotifyApi client) async {
-    final playlists = await client.playlists.me.all();
-    return playlists.where((p) => p.owner.id == widget.myDetails.id).toList();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        body: Column(
-      children: <Widget>[
-        Padding(
-          padding: EdgeInsets.only(bottom: 20),
-        ),
-        Row(
-          children: <Widget>[
-            IconButton(
-              iconSize: 48,
-              icon: Icon(
-                Icons.keyboard_arrow_down,
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            )
-          ],
-        ),
-        Expanded(
-          child: SimpleFutureBuilder(_playlists,
-              (BuildContext context, playlists) => ProjectForm(playlists, widget.client, widget.myDetails)),
-        )
-      ],
-    ));
-  }
-}
 
 class CreateProject extends StatefulWidget {
-  final SpotifyApi client;
-  final User myDetails;
+  final SpotifyApi api;
+  final User userDetails;
+  final List<PlaylistSimple> playlists;
+  final List<ConfigPage> configPages;
 
-  CreateProject(this.client, this.myDetails, {Key key}) : super(key: key);
+  CreateProject({this.api, this.playlists, this.userDetails, this.configPages});
 
   @override
-  CreateProjectState createState() => CreateProjectState();
+  _CreateProjectState createState() => _CreateProjectState();
 }
 
-class ProjectFormState extends State<ProjectForm> {
-  List<GlobalKey<FormState>> pagesKeys;
+class _CreateProjectState extends State<CreateProject> {
   final controller = PageController();
+  List<ConfigPage> configPages;
   List<bool> selectedPlaylists;
-  Map<int, bool> pagesState = Map<int, bool>();
-  ProjectTemplate selectedTemplate;
   double prevPage = 0;
   String projectName;
 
   @override
   void initState() {
     super.initState();
-    pagesKeys = List.generate(3, (i) => GlobalKey<FormState>());
-    selectedPlaylists = List<bool>.generate(
-        widget.playlists.length, (i) => false);
-    pagesState[0] = true;
-    controller.addListener(() {
-      if (!(prevPage.isInt() && controller.page > prevPage)) {
-        prevPage = controller.page;
-        return;
-      }
-      int page = prevPage.toInt();
-      if (pagesKeys[page].currentState.validate())
-        pagesKeys[page].currentState.save();
-      else
-        controller.goToPage(page);
+    configPages = []..addAll(widget.configPages);
+    configPages[0].current = true;
+    controller.addListener(handlePageChange);
+  }
+
+  handlePageChange(){
+    if (!(prevPage.isInt() && controller.page > prevPage)) {
       prevPage = controller.page;
-    });
+      return;
+    }
+    int page = prevPage.toInt();
+    if (configPages[page].key.currentState.validate())
+      configPages[page].key.currentState.save();
+    else
+      controller.goToPage(page);
+    prevPage = controller.page;
   }
 
   @override
   Widget build(BuildContext context) {
-    final pagesWidgets = <Widget>[pagePlaylists, pageName];
-    final pages = <Widget>[];
-    for (int i = 0; i < pagesWidgets.length; i++)
-      pages.add(Form(key: pagesKeys[i], child: pagesWidgets[i]));
-    final columnWidgets = <Widget>[
-      Expanded(
-        child: PageView(
-          onPageChanged: (pageIndex) {
-            setState(() {
-              for (var i in pagesState.keys) pagesState[i] = false;
-              pagesState[pageIndex] = true;
-            });
-          },
-          controller: controller,
-          children: pages,
-        ),
-      ),
-    ];
-    if (curPage != pages.length - 1)
-      columnWidgets.add(Padding(
-        padding: const EdgeInsets.all(20),
-        child: Align(
-          alignment: AlignmentDirectional.bottomEnd,
-          child: RaisedButton(
-            padding: EdgeInsets.all(12),
-            color: Theme.of(context).primaryColor,
-            child: Text(
-              "Next",
-              style: Theme.of(context).textTheme.button,
-            ),
-            onPressed: () => controller.nextPageSimple(),
-          ),
-        ),
-      ));
-    columnWidgets.add(getBreadCrumbs(pages.length));
-    return Column(
-      children: columnWidgets,
-    );
-  }
-
-  int get curPage => controller.hasClients ? controller.page.round() : null;
-
-  Widget getBreadCrumbs(pagesNum) {
-    var theme = Theme.of(context);
-    return Container(
-        color: theme.backgroundColor,
-        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
-        child: Stack(
-          alignment: AlignmentDirectional.center,
-          children: <Widget>[
-            SizedBox(
-              width: 100,
-              child: Divider(
-                thickness: 2.0,
-                color: Colors.white70,
-              ),
-            ),
-            Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List<Widget>.generate(
-                    pagesNum,
-                    (i) => ButtonTheme(
-                          minWidth: pagesState.containsKey(i) && pagesState[i]?15:10,
-                          child: FlatButton(
-                            color: !pagesState.containsKey(i)
-                                ? Colors.grey[300]
-                                : pagesState[i]
-                                    ? theme.primaryColor
-                                    : theme.secondaryHeaderColor,
-                            shape: CircleBorder(
-                                side: pagesState.containsKey(i) && pagesState[i]
-                                    ? BorderSide(color: Colors.white, width: 1)
-                                    : BorderSide(width: 0)),
-                            padding: EdgeInsets.all(0),
-                            onPressed: () {
-                              controller.goToPage(i);
-                            },
-                            child: Container(
-                              width: 0,
-                              height: 0,
-                              padding: EdgeInsets.all(0),
-                              margin: EdgeInsets.all(0),
-                            ),
-                          ),
-                        ))),
-          ],
-        ));
-  }
-
-  Future<ProjectConfiguration> createSavedSongsProject() async { // TODO: use external createProject
-    final tracksIds = (await widget.client.tracks.me.saved.all()).map((t)=>t.track.id).toList();
-    final playlistIds = widget.playlists
-        .asMap()
-        .entries
-        .where((e) => selectedPlaylists[e.key])
-        .map((entry)=>entry.value.id).toList();
-    final project = ProjectConfiguration.init(projectName, tracksIds, playlistIds);
-    await ProjectsDB().insertProject(project);
-    return project;
-  }
-
-  Widget get pageName {
-    return SingleChildScrollView(
-      child: Column(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(left: 30, right: 30, top: 200),
-            child: TextFormField(
-              style: TextStyle(fontSize: 24),
-              textAlign: TextAlign.center,
-              decoration: const InputDecoration(
-                hintText: "Project's Name",
-              ),
-              validator: (value) {
-                if (value.isEmpty) {
-                  return 'Please enter some text';
-                }
-                return null;
-              },
-              onSaved: (value) => projectName = value,
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(top: 200, bottom: 40),
-            child: RaisedButton(
-              child: Text(
-                "Let's Start!",
-                style: Theme.of(context).textTheme.headline6,
-              ),
-
-              onPressed: () async {
-                pagesKeys.last.currentState.save();
-                ProjectConfiguration newProject = await showDialog(context: context,barrierDismissible: false,
-                    child: ProgressIndicatorPopup(createSavedSongsProject));
-                Navigator.pop(context, newProject);
-              },
-              padding: EdgeInsets.symmetric(vertical: 25, horizontal: 50),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(40)),
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget get pagePlaylists {
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text("Choose Playlists", style: theme.textTheme.headline4),
-        Stack(
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Text(
-                "You will add songs to those playlists trough the project",
-                style: theme.textTheme.caption,
-              ),
-            ),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: IconButton(icon: Icon(Icons.add), onPressed: () async {
-                Playlist playlist = await showDialog(context: context, child: NewPlaylistDialog(widget.client, widget.myDetails.id));
-                if (playlist != null) {
-                  widget.playlists.add(playlist);
-                  setState(() {
-                    selectedPlaylists.add(true);
-                  });
-                }
-              },),
-            )
-          ],
-        ),
+    return Scaffold(
+      body: Column(children: <Widget>[
+        Padding(padding: EdgeInsets.only(bottom: 20),),
+        topBar(context),
         Expanded(
-          child: Container(
-            margin: EdgeInsets.only(top: 5, bottom: 20),
-            color: theme.backgroundColor,
-            child: PlaylistsSelection(
-              playlists: widget.playlists,
-              theme: Theme.of(context),
-              onSaved: (v) => selectedPlaylists = v,
-              validator: (v) =>
-                  v.any((e) => e) ? null : "select at least one playlist",
-              initialValue: selectedPlaylists,
-            ),
-          ),
-        ),
-      ],
+          child: Column(children: [
+            Expanded(child: PageView(),)
+          ],),
+        )
+      ]),
     );
   }
 
+  Widget topBar(BuildContext context) => Row(
+      children: <Widget>[
+        IconButton(
+            iconSize: 48,
+            icon: Icon(
+              Icons.keyboard_arrow_down,
+            ),
+            onPressed: () {
+              Navigator.of(context).pop();
+            }
+        )
+      ]);
 }
 
-class ProjectForm extends StatefulWidget {
-  final SpotifyApi client;
-  final User myDetails;
-  final List<PlaylistSimple> playlists;
-  ProjectForm(this.playlists, this.client, this.myDetails, {Key key}) : super(key: key);
 
-  @override
-  ProjectFormState createState() => ProjectFormState();
-}
+
+

@@ -92,7 +92,7 @@ class ProjectsScreenState extends State<ProjectsScreen> {
           ProjectConfiguration newProject = await
           Navigator.of(context)
               .push(MaterialPageRoute(builder:
-              (BuildContext context) => CreateProject(spotifyClient, myDetails)));
+              (BuildContext context) => Text(""))); //CreateProject(spotifyClient, myDetails))); TODO: change back to CreateProject
           if (newProject != null)
             setState(() {
               _projects.add(newProject);
