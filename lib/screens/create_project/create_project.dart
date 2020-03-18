@@ -52,12 +52,26 @@ class _CreateProjectState extends State<CreateProject> {
         Padding(padding: EdgeInsets.only(bottom: 20),),
         topBar(context),
         Expanded(
-          child: Column(children: [
-            Expanded(child: PageView(),)
-          ],),
+          child: pageView(),
         )
       ]),
     );
+  }
+
+  Widget pageView() {
+    return Column(children: [
+      Expanded(child: PageView(
+        children: configPages.map<Form>((e) => e.build()).toList(growable: false),
+        controller: controller,
+        onPageChanged: (pageIndex){
+          setState(() {
+//            configPages.forEach((page) => page.current = false);
+            configPages[prevPage.toInt()].current = false;
+            configPages[pageIndex].current = true;
+          });
+        },
+      ),)
+    ],);
   }
 
   Widget topBar(BuildContext context) => Row(
