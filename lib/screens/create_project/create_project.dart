@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:spotify/spotify_io.dart';
 import 'package:spotify_manager/common/utils.dart';
 import 'package:spotify_manager/widgets/page_indicator.dart';
-import 'package:spotify_manager/screens/create_project/config_page.dart';
+import 'package:spotify_manager/screens/create_project/config_pages/config_page.dart';
 
 
 class CreateProject extends StatefulWidget {
