@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:spotify/spotify_io.dart';
 import 'package:spotify_manager/common/utils.dart';
+import 'package:spotify_manager/widgets/page_indicator.dart';
 import 'package:spotify_manager/screens/create_project/config_page.dart';
 
 
@@ -54,14 +55,15 @@ class _CreateProjectState extends State<CreateProject> {
         Padding(padding: EdgeInsets.only(bottom: 20),),
         topBar(context),
         Expanded(
-          child: pageView(),
+          child: pageView(context),
         )
       ]),
     );
   }
 
-  Widget pageView() {
-    final colChildren = [
+  Widget pageView(BuildContext context) {
+    final theme = Theme.of(context);
+    final column = Column(children: <Widget>[
       Expanded(child: PageView(
         children: configPages.map<Form>((e) => e.build()).toList(growable: false),
         controller: controller,
@@ -73,10 +75,19 @@ class _CreateProjectState extends State<CreateProject> {
           });
         },
       ),)
-    ];
+    ]);
     if (curPage != configPages.length - 1)
-      colChildren.add(bottomBar());
-    return Column(children: colChildren,);
+      column.children.add(bottomBar());
+    final pagesState = configPages.map<PageState>((p) =>
+      p.current ? PageState.current : p.seen ? PageState.seen : PageState.none).toList(growable: false);
+    column.children.add(PageIndicator(
+      pagesState: pagesState,
+      onPressed: (i)=>controller.goToPage(i),
+      primaryColor: theme.primaryColor,
+      secondaryColor: theme.secondaryHeaderColor,
+      backgroundColor: theme.backgroundColor,
+    ));
+    return column;
   }
 
   Widget topBar(BuildContext context) => Row(

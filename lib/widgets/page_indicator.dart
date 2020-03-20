@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 
+enum PageState {
+  current,
+  seen,
+  none
+}
+
 nullFunc(int i){}
 
 class PageIndicator extends StatelessWidget {
-  final List<int> pagesState;
+  final List<PageState> pagesState;
   final void Function(int) onPressed;
   final Color primaryColor;
   final Color secondaryColor;
@@ -15,7 +21,7 @@ class PageIndicator extends StatelessWidget {
     this.primaryColor = Colors.green,
     this.secondaryColor = Colors.lightGreen,
     this.offColor = const Color(0xFFE0E0E0),
-    this.backgroundColor = Colors.transparent
+    this.backgroundColor = Colors.transparent // TODO: change to dart/light and accent color
   });
 
   @override
@@ -38,15 +44,15 @@ class PageIndicator extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: pagesState.map<Widget>((state) {
                   return ButtonTheme(
-                  minWidth: state == 1 ? 15:10,
+                  minWidth: state == PageState.current ? 15:10,
                   child: FlatButton(
-                    color: state == -1
+                    color: state == PageState.none
                         ? Colors.grey[300]
-                        : state == 1
+                        : state == PageState.current
                         ? primaryColor
                         : secondaryColor,
                     shape: CircleBorder(
-                        side: state == 1
+                        side: state == PageState.current
                             ? BorderSide(color: Colors.white, width: 1)
                             : BorderSide(width: 0)),
                     padding: EdgeInsets.all(0),
