@@ -3,18 +3,16 @@ import 'config_page.dart';
 
 
 class NameConfigPage extends ConfigPage {
-  final BuildContext context;
   void Function(String) onSaved;
   void Function() onSubmit;
 
   NameConfigPage({
     GlobalKey<FormState> key,
-    @required this.context,
     @required this.onSaved,
     @required this.onSubmit}):super(key);
 
   @override
-  Widget buildPage() {
+  Widget buildPage(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         children: <Widget>[

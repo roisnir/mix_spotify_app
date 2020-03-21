@@ -17,9 +17,9 @@ abstract class ConfigPage {
 
   ConfigPage([GlobalKey<FormState> key]):this.key = key ?? GlobalKey<FormState>();
 
-  Widget buildPage();
+  Widget buildPage(BuildContext context);
 
-  Form build(){
-    return Form(key: key, child: buildPage(),);
+  Form build(BuildContext context){
+    return Form(key: key, child: buildPage(context),);
   }
 }

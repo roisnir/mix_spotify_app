@@ -6,7 +6,6 @@ import 'config_page.dart';
 
 
 class PlaylistsConfigPage extends ConfigPage {
-  final BuildContext context;
   void Function(List<bool>) onSaved;
   void Function(List<bool>) onPlaylistAdded;
   final List<PlaylistSimple> playlists;
@@ -16,7 +15,6 @@ class PlaylistsConfigPage extends ConfigPage {
 
   PlaylistsConfigPage({
     GlobalKey<FormState> key,
-    @required this.context,
     @required this.onSaved,
     @required this.playlists,
     @required this.selectedPlaylists,
@@ -25,7 +23,7 @@ class PlaylistsConfigPage extends ConfigPage {
     @required this.userId}):super(key);
 
   @override
-  Widget buildPage() {
+  Widget buildPage(BuildContext context) {
     final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
