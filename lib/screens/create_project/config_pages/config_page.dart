@@ -1,3 +1,5 @@
+library config_page;
+
 import 'package:flutter/material.dart';
 
 
@@ -15,9 +17,9 @@ abstract class ConfigPage {
 
   ConfigPage([GlobalKey<FormState> key]):this.key = key ?? GlobalKey<FormState>();
 
-  Widget _buildPage();
+  Widget buildPage();
 
   Form build(){
-    return Form(key: key, child: _buildPage(),);
+    return Form(key: key, child: buildPage(),);
   }
 }
