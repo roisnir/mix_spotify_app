@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/project_manager/projects_db.dart';
 import 'package:spotify_manager/main.dart';
-import 'package:spotify_manager/screens/create_project/create_project.dart';
+import 'package:spotify_manager/screens/create_project/select_template.dart';
 import 'project_screen.dart';
 
 const projectsFileName = 'projects.json';
@@ -52,20 +52,22 @@ class ProjectsScreenState extends State<ProjectsScreen> {
         db.close();
       }, )
       ,
-      onTap: () async {
-        int index = await Navigator.of(context)
-            .push(MaterialPageRoute(builder: (BuildContext subContext) {
-          return ProjectScreen(
-            projectConfig: project,
-            client: SpotifyContainer.of(context).client,
-            me: SpotifyContainer.of(context).myDetails,
-          );
-        }));
-        setState(() {
-          project.curIndex = index;
-        });
-      },
+      onTap: () async => launchProject(context, project),
     );
+  }
+
+  launchProject(BuildContext context, ProjectConfiguration project) async {
+    int index = await Navigator.of(context)
+        .push(MaterialPageRoute(builder: (BuildContext subContext) {
+      return ProjectScreen(
+        projectConfig: project,
+        client: SpotifyContainer.of(context).client,
+        me: SpotifyContainer.of(context).myDetails,
+      );
+    }));
+    setState(() {
+      project.curIndex = index;
+    });
   }
 
   @override
@@ -92,11 +94,12 @@ class ProjectsScreenState extends State<ProjectsScreen> {
           ProjectConfiguration newProject = await
           Navigator.of(context)
               .push(MaterialPageRoute(builder:
-              (BuildContext context) => Text(""))); //CreateProject(spotifyClient, myDetails))); TODO: change back to CreateProject
+              (BuildContext context) => SelectTemplate(spotifyClient, myDetails)));
           if (newProject != null)
             setState(() {
               _projects.add(newProject);
             });
+          await launchProject(context, newProject);
         },
       ),
     );
