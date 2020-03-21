@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:spotify/spotify_io.dart';
+import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/utils.dart';
 import 'package:spotify_manager/widgets/page_indicator.dart';
 import 'package:spotify_manager/screens/create_project/config_pages/config_page.dart';
+import 'package:spotify_manager/screens/create_project/config_pages/name_config_page.dart';
+import 'package:spotify_manager/screens/create_project/config_pages/playlists_config_page.dart';
 
 
 class CreateProject extends StatefulWidget {
@@ -11,8 +14,19 @@ class CreateProject extends StatefulWidget {
   final User userDetails;
   final List<PlaylistSimple> playlists;
   final List<ConfigPage> configPages;
+  final void Function(String) onNameSaved;
+  final void Function(List<PlaylistSimple>) onPlaylistsSaved;
+  final Future<ProjectConfiguration> Function() onSubmit;
 
-  CreateProject({this.api, this.playlists, this.userDetails, this.configPages});
+  CreateProject({
+    @required this.api,
+    @required this.playlists,
+    @required this.userDetails,
+    List<ConfigPage> configPages,
+    @required this.onNameSaved,
+    @required this.onPlaylistsSaved,
+    @required this.onSubmit,
+  }): this.configPages = configPages ?? [];
 
   @override
   _CreateProjectState createState() => _CreateProjectState();
@@ -28,7 +42,24 @@ class _CreateProjectState extends State<CreateProject> {
   @override
   void initState() {
     super.initState();
-    configPages = []..addAll(widget.configPages);
+    selectedPlaylists = List<bool>.generate(widget.playlists.length, (i) => false);
+    configPages = widget.configPages..addAll([
+      PlaylistsConfigPage(
+        onSaved: (selected)=> widget.onPlaylistsSaved(widget.playlists
+            .asMap()
+            .entries
+            .where((e) => selectedPlaylists[e.key])
+            .map((entry)=>entry.value).toList()),
+        playlists: widget.playlists,
+        selectedPlaylists: selectedPlaylists,
+        onPlaylistAdded: (playlist) => selectedPlaylists.add(true),
+        client: widget.api,
+        userId: widget.userDetails.id
+      ),
+      NameConfigPage(
+          onSaved: widget.onNameSaved,
+          onSubmit: widget.onSubmit)
+    ]);
     configPages[0].current = true;
     controller.addListener(handlePageChange);
   }
@@ -65,7 +96,7 @@ class _CreateProjectState extends State<CreateProject> {
     final theme = Theme.of(context);
     final column = Column(children: <Widget>[
       Expanded(child: PageView(
-        children: configPages.map<Form>((e) => e.build()).toList(growable: false),
+        children: configPages.map<Form>((e) => e.build(context)).toList(growable: false),
         controller: controller,
         onPageChanged: (pageIndex){
           setState(() {
