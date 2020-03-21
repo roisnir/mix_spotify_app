@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'config_page.dart';
 
 
 class NameConfigPage extends ConfigPage {
   void Function(String) onSaved;
-  void Function() onSubmit;
+  Future<ProjectConfiguration> Function() onSubmit;
 
   NameConfigPage({
     GlobalKey<FormState> key,
@@ -13,6 +14,27 @@ class NameConfigPage extends ConfigPage {
 
   @override
   Widget buildPage(BuildContext context) {
+  }
+}
+
+
+class NameConfigPageWidget extends StatefulWidget {
+  void Function(String) onSaved;
+  Future<ProjectConfiguration> Function() onSubmit;
+
+  NameConfigPageWidget({
+    @required this.onSaved,
+    @required this.onSubmit});
+
+  @override
+  _NameConfigPageWidgetState createState() => _NameConfigPageWidgetState();
+}
+
+class _NameConfigPageWidgetState extends State<NameConfigPageWidget> {
+  bool isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         children: <Widget>[
@@ -30,17 +52,23 @@ class NameConfigPage extends ConfigPage {
                 }
                 return null;
               },
-              onSaved: onSaved,
+              onSaved: widget.onSaved,
             ),
           ),
           Padding(
             padding: EdgeInsets.only(top: 200, bottom: 40),
-            child: RaisedButton(
+            child: isLoading ?
+            RaisedButton(child: CircularProgressIndicator(), onPressed: (){},) :
+            RaisedButton(
               child: Text(
                 "Let's Start!",
                 style: Theme.of(context).textTheme.headline6,
               ),
-              onPressed: onSubmit,
+              onPressed: () async {
+                setState(() => isLoading = true);
+                final projectConf = await widget.onSubmit();
+                Navigator.of(context).pop(projectConf);
+              },
               padding: EdgeInsets.symmetric(vertical: 25, horizontal: 50),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(40)),
@@ -50,6 +78,4 @@ class NameConfigPage extends ConfigPage {
       ),
     );
   }
-
-
 }
