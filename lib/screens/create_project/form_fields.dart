@@ -1,15 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spotify/spotify_io.dart' as spotify;
-
-class ProjectTemplate{
-  final String title;
-  final String description;
-  final IconData icon;
-  ProjectTemplate(this.title, this.description, this.icon);
-}
-
-
-
+import 'package:spotify_manager/common/project_manager/project_template.dart';
 
 
 class ProjectTemplateSelection extends FormField<int> {
@@ -49,7 +40,7 @@ class ProjectTemplateSelection extends FormField<int> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(template.title, style: theme.textTheme.title,),
+                  Text(template.title, style: theme.textTheme.headline6,),
                   Text(template.description, style: theme.textTheme.caption,)
                 ],
               ),
@@ -132,7 +123,7 @@ class PlaylistsSelection extends FormField<List<bool>> {
                 child: Text(playlist.name,
                     softWrap: false,
                     textAlign: TextAlign.center,
-                    style: theme.textTheme.subtitle),
+                    style: theme.textTheme.subtitle2),
               )
             ],
           )));

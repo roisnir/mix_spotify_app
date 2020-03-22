@@ -1,13 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/project_manager/projects_db.dart';
 import 'package:spotify_manager/main.dart';
-import 'package:spotify_manager/common/project_manager/project.dart';
-import 'package:spotify_manager/screens/create_project/create_project.dart';
+import 'package:spotify_manager/screens/create_project/select_template.dart';
 import 'project_screen.dart';
 
 const projectsFileName = 'projects.json';
@@ -37,16 +33,6 @@ class ProjectsScreenState extends State<ProjectsScreen> {
     return ListTile(
       title: Text(project.name),
       leading: Icon(Icons.album),
-      //          SizedBox(
-//            width: 150,
-//            child: LinearPercentIndicator(
-//              lineHeight: 20.0,
-//              center: Text("${(project.curIndex / project.trackIds.length * 100).toStringAsFixed(1)}%"),
-//              percent: project.curIndex / project.trackIds.length,
-//              backgroundColor: Colors.grey,
-//              progressColor: Colors.green,
-//            ),
-//          ),
       trailing: PopupMenuButton(itemBuilder: (c) => [PopupMenuItem(value: 1, child: Text('Delete'),)],onSelected: (v) async {
         setState(() {
           _projects.remove(project);
@@ -56,20 +42,22 @@ class ProjectsScreenState extends State<ProjectsScreen> {
         db.close();
       }, )
       ,
-      onTap: () async {
-        int index = await Navigator.of(context)
-            .push(MaterialPageRoute(builder: (BuildContext subContext) {
-          return ProjectScreen(
-            projectConfig: project,
-            client: SpotifyContainer.of(context).client,
-            me: SpotifyContainer.of(context).myDetails,
-          );
-        }));
-        setState(() {
-          project.curIndex = index;
-        });
-      },
+      onTap: () async => launchProject(context, project),
     );
+  }
+
+  launchProject(BuildContext context, ProjectConfiguration project) async {
+    int index = await Navigator.of(context)
+        .push(MaterialPageRoute(builder: (BuildContext subContext) {
+      return ProjectScreen(
+        projectConfig: project,
+        client: SpotifyContainer.of(context).client,
+        me: SpotifyContainer.of(context).myDetails,
+      );
+    }));
+    setState(() {
+      project.curIndex = index;
+    });
   }
 
   @override
@@ -96,11 +84,13 @@ class ProjectsScreenState extends State<ProjectsScreen> {
           ProjectConfiguration newProject = await
           Navigator.of(context)
               .push(MaterialPageRoute(builder:
-              (BuildContext context) => CreateProject(spotifyClient, myDetails)));
-          if (newProject != null)
+              (BuildContext context) => SelectTemplate(spotifyClient, myDetails)));
+          if (newProject != null) {
             setState(() {
               _projects.add(newProject);
             });
+            await launchProject(context, newProject);
+          }
         },
       ),
     );

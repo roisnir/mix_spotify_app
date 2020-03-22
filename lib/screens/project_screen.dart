@@ -216,7 +216,7 @@ class ProjectScreenState extends State<ProjectScreen> {
                   height: 50,
                   child: Marquee(
                     text: track.name,
-                    style: Theme.of(context).textTheme.headline,
+                    style: Theme.of(context).textTheme.headline5,
                     scrollAxis: Axis.horizontal,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     blankSpace: 100.0,

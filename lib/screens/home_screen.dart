@@ -12,7 +12,7 @@ class HomeScreen extends StatelessWidget{
     Padding(
       padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 30),
       child: Text("Hello ${SpotifyContainer.of(context).myDetails.displayName}!",
-      style: Theme.of(context).textTheme.display1,),
+      style: Theme.of(context).textTheme.headline4,),
     ),
     Padding(
       padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 30),

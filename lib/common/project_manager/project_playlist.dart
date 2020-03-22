@@ -11,7 +11,7 @@ class ProjectPlaylist {
 
   static Future<ProjectPlaylist> fromPlaylist(Playlist playlist, SpotifyApi api) async {
     final trackIds = (await Pages<Track>.fromPaging(api,
-        playlist.tracksPaging, (json) => Track.fromJson(json['track'])).all())
+        playlist.tracks, (json) => Track.fromJson(json['track'])).all())
         .map((t)=>t.id).toList();
     return ProjectPlaylist(playlist, trackIds);
   }
