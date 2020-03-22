@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:spotify/spotify_io.dart';
-import 'package:spotify_manager/common/project_manager/project_template.dart';
-import 'package:spotify_manager/common/utils.dart';
-import 'package:spotify_manager/screens/create_project/create_saved_songs_project.dart';
-import 'package:spotify_manager/screens/create_project/form_fields.dart';
 import 'package:spotify_manager/main.dart';
+import 'package:spotify_manager/screens/create_project/form_fields.dart';
+import 'package:spotify_manager/common/project_manager/project_template.dart';
+import 'package:spotify_manager/screens/create_project/create_saved_songs_project.dart';
 
 final templates = <ProjectTemplate>[
   ProjectTemplate(
@@ -50,41 +49,44 @@ class _SelectTemplateState extends State<SelectTemplate> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return SimpleFutureBuilder(
-      playlistsFuture,
-      (context, playlists)=>Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Padding(padding: EdgeInsets.only(top: 40),),
-          Text("Choose Template", style: theme.textTheme.headline4),
-          Padding(
-            padding: const EdgeInsets.only(top: 4, bottom: 20),
-            child: Text(
-              "What kind of project would you like to start?",
-              style: theme.textTheme.caption,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Padding(padding: EdgeInsets.only(top: 40),),
+        Text("Choose Template", style: theme.textTheme.headline4),
+        Padding(
+          padding: const EdgeInsets.only(top: 4, bottom: 20),
+          child: Text(
+            "What kind of project would you like to start?",
+            style: theme.textTheme.caption,
           ),
-          Expanded(
-            child: ProjectTemplateSelection(
-              theme: theme,
-              templates: templates,
-              validator: (int i) => i == null ? "please select template" : null,
-              onChanged: (i){
-                final builder = templates[i].builder;
-                if (builder == null){
-                  showDialog(context: context, builder: (context)=>AlertDialog(
-                    title:Text("Coming Soon!"), content: Text("This project template is not supported yet."),actions: <Widget>[FlatButton(child:Text("OK"), onPressed: (){},)],));
-                  return;
-                }
-                Navigator.of(context).push(MaterialPageRoute(builder: (c)=>
-                SpotifyContainer(client: widget.api, myDetails: widget.currentUser, child:
-                  builder(playlists),))).then((project) => Navigator.of(context).pop(project));
-              },
-            ),
+        ),
+        Expanded(
+          child: FutureBuilder(
+            future: playlistsFuture,
+            builder: (context, snapshot)=>snapshot.hasData?buildTemplates(context, snapshot.data, theme):Center(child:CircularProgressIndicator()),
           ),
-        ],
-      ),
+        ),
+      ],
     );
-
   }
+
+  buildTemplates(BuildContext context, List<PlaylistSimple> playlists, ThemeData theme)=> ProjectTemplateSelection(
+    theme: theme,
+    templates: templates,
+    validator: (int i) => i == null ? "please select template" : null,
+    onChanged: (i){
+      final builder = templates[i].builder;
+      if (builder == null){
+        showDialog(context: context, builder: (context)=>AlertDialog(
+          title:Text("Coming Soon!"), content: Text("This project template is not supported yet."),actions: <Widget>[FlatButton(child:Text("OK"), onPressed: (){Navigator.of(context).pop();},)],));
+        return;
+      }
+      Navigator.of(context).push(MaterialPageRoute(builder: (c)=>
+          SpotifyContainer(client: widget.api, myDetails: widget.currentUser, child:
+          builder(playlists),))).then((project) {
+            return Navigator.of(context).pop(project);
+          });
+    },
+  );
 }
