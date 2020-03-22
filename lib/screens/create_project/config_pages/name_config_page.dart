@@ -14,13 +14,14 @@ class NameConfigPage extends ConfigPage {
 
   @override
   Widget buildPage(BuildContext context) {
+    return NameConfigPageWidget(onSaved: onSaved, onSubmit: onSubmit,);
   }
 }
 
 
 class NameConfigPageWidget extends StatefulWidget {
-  void Function(String) onSaved;
-  Future<ProjectConfiguration> Function() onSubmit;
+  final void Function(String) onSaved;
+  final Future<ProjectConfiguration> Function() onSubmit;
 
   NameConfigPageWidget({
     @required this.onSaved,
@@ -57,14 +58,14 @@ class _NameConfigPageWidgetState extends State<NameConfigPageWidget> {
           ),
           Padding(
             padding: EdgeInsets.only(top: 200, bottom: 40),
-            child: isLoading ?
-            RaisedButton(child: CircularProgressIndicator(), onPressed: (){},) :
-            RaisedButton(
-              child: Text(
+            child: RaisedButton(
+              child: isLoading ?
+              CircularProgressIndicator():
+              Text(
                 "Let's Start!",
                 style: Theme.of(context).textTheme.headline6,
               ),
-              onPressed: () async {
+              onPressed: isLoading ?(){}:() async {
                 setState(() => isLoading = true);
                 final projectConf = await widget.onSubmit();
                 Navigator.of(context).pop(projectConf);
