@@ -42,32 +42,34 @@ class PageIndicator extends StatelessWidget {
             ),
             Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: pagesState.map<Widget>((state) {
+                children:
+                List<Widget>.generate(pagesState.length, (i) {
+                  final state = pagesState[i];
                   return ButtonTheme(
-                  minWidth: state == PageState.current ? 15:10,
-                  child: FlatButton(
-                    color: state == PageState.none
-                        ? Colors.grey[300]
-                        : state == PageState.current
-                        ? primaryColor
-                        : secondaryColor,
-                    shape: CircleBorder(
-                        side: state == PageState.current
-                            ? BorderSide(color: Colors.white, width: 1)
-                            : BorderSide(width: 0)),
-                    padding: EdgeInsets.all(0),
-                    onPressed: () {
-//                      onPressed(i);
-                    },
-                    child: Container(
-                      width: 0,
-                      height: 0,
+                    minWidth: state == PageState.current ? 15:10,
+                    child: FlatButton(
+                      color: state == PageState.none
+                          ? Colors.grey[300]
+                          : state == PageState.current
+                          ? primaryColor
+                          : secondaryColor,
+                      shape: CircleBorder(
+                          side: state == PageState.current
+                              ? BorderSide(color: Colors.white, width: 1)
+                              : BorderSide(width: 0)),
                       padding: EdgeInsets.all(0),
-                      margin: EdgeInsets.all(0),
+                      onPressed: () {
+                      onPressed(i);
+                      },
+                      child: Container(
+                        width: 0,
+                        height: 0,
+                        padding: EdgeInsets.all(0),
+                        margin: EdgeInsets.all(0),
+                      ),
                     ),
-                  ),
-                );
-                }).toList()),
+                  );
+                }),)
           ],
         ));
   }
