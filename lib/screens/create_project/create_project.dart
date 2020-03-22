@@ -35,46 +35,54 @@ class CreateProject extends StatefulWidget {
 class _CreateProjectState extends State<CreateProject> {
   final controller = PageController();
   List<ConfigPage> configPages;
-  List<bool> selectedPlaylists;
-  double prevPage = 0;
+  int prevPage = 0;
   String projectName;
 
   @override
   void initState() {
     super.initState();
-    selectedPlaylists = List<bool>.generate(widget.playlists.length, (i) => false);
+    final selectedPlaylists = List<bool>.generate(widget.playlists.length, (i) => false);
     configPages = widget.configPages..addAll([
       PlaylistsConfigPage(
-        onSaved: (selected)=> widget.onPlaylistsSaved(widget.playlists
+        onSaved: (selected){
+          widget.onPlaylistsSaved(widget.playlists
             .asMap()
             .entries
-            .where((e) => selectedPlaylists[e.key])
-            .map((entry)=>entry.value).toList()),
+            .where((e) => selected[e.key])
+            .map((entry)=>entry.value).toList());
+        },
         playlists: widget.playlists,
         selectedPlaylists: selectedPlaylists,
-        onPlaylistAdded: (playlist) => selectedPlaylists.add(true),
-        client: widget.api,
-        userId: widget.userDetails.id
       ),
       NameConfigPage(
           onSaved: widget.onNameSaved,
-          onSubmit: widget.onSubmit)
+          onSubmit: (){
+            configPages.last.key.currentState.save();
+            return widget.onSubmit();
+          })
     ]);
     configPages[0].current = true;
     controller.addListener(handlePageChange);
   }
 
   handlePageChange(){
-    if (!(prevPage.isInt() && controller.page > prevPage)) {
-      prevPage = controller.page;
-      return;
+    if (controller.page > prevPage) { // tried to move to the next page
+      if (configPages[prevPage].key.currentState.validate())
+        configPages[prevPage].key.currentState.save();
+      else {
+        controller.goToPage(prevPage);
+        return;
+      }
     }
-    int page = prevPage.toInt();
-    if (configPages[page].key.currentState.validate())
-      configPages[page].key.currentState.save();
-    else
-      controller.goToPage(page);
-    prevPage = controller.page;
+    if (controller.page.round() != prevPage)
+      setState(() {
+        configPages[prevPage].current = false;
+        configPages[controller.page.round()].current = true;
+      });
+    final page = controller.page.toInt();
+    if ((!(controller.page.isInt())) || page == prevPage)
+      return;
+    prevPage = page;
   }
 
   int get curPage => controller.hasClients ? controller.page.round() : null;
@@ -97,15 +105,7 @@ class _CreateProjectState extends State<CreateProject> {
     final column = Column(children: <Widget>[
       Expanded(child: PageView(
         children: configPages.map<Form>((e) => e.build(context)).toList(growable: false),
-        controller: controller,
-        onPageChanged: (pageIndex){
-          setState(() {
-//            configPages.forEach((page) => page.current = false);
-            configPages[prevPage.toInt()].current = false;
-            configPages[pageIndex].current = true;
-          });
-        },
-      ),)
+        controller: controller),)
     ]);
     if (curPage != configPages.length - 1)
       column.children.add(bottomBar());
