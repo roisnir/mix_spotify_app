@@ -33,16 +33,6 @@ class ProjectsScreenState extends State<ProjectsScreen> {
     return ListTile(
       title: Text(project.name),
       leading: Icon(Icons.album),
-      //          SizedBox(
-//            width: 150,
-//            child: LinearPercentIndicator(
-//              lineHeight: 20.0,
-//              center: Text("${(project.curIndex / project.trackIds.length * 100).toStringAsFixed(1)}%"),
-//              percent: project.curIndex / project.trackIds.length,
-//              backgroundColor: Colors.grey,
-//              progressColor: Colors.green,
-//            ),
-//          ),
       trailing: PopupMenuButton(itemBuilder: (c) => [PopupMenuItem(value: 1, child: Text('Delete'),)],onSelected: (v) async {
         setState(() {
           _projects.remove(project);
@@ -95,11 +85,12 @@ class ProjectsScreenState extends State<ProjectsScreen> {
           Navigator.of(context)
               .push(MaterialPageRoute(builder:
               (BuildContext context) => SelectTemplate(spotifyClient, myDetails)));
-          if (newProject != null)
+          if (newProject != null) {
             setState(() {
               _projects.add(newProject);
             });
-          await launchProject(context, newProject);
+            await launchProject(context, newProject);
+          }
         },
       ),
     );
