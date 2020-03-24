@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:spotify/spotify_io.dart';
 import 'package:spotify_manager/main.dart';
+import 'package:spotify_manager/screens/create_project/create_maintain_project.dart';
 import 'package:spotify_manager/screens/create_project/form_fields.dart';
 import 'package:spotify_manager/common/project_manager/project_template.dart';
 import 'package:spotify_manager/screens/create_project/create_saved_songs_project.dart';
@@ -22,7 +23,8 @@ final templates = <ProjectTemplate>[
   ProjectTemplate(
       "Maintain",
       "Work on tracks that not included in any of your playlists",
-      Icons.build),
+      Icons.build,
+      builder: (playlists)=>CreateMaintainProject(playlists)),
 ];
 
 class SelectTemplate extends StatefulWidget {
@@ -85,7 +87,8 @@ class _SelectTemplateState extends State<SelectTemplate> {
       Navigator.of(context).push(MaterialPageRoute(builder: (c)=>
           SpotifyContainer(client: widget.api, myDetails: widget.currentUser, child:
           builder(playlists),))).then((project) {
-            return Navigator.of(context).pop(project);
+            if (project != null)
+              return Navigator.of(context).pop(project);
           });
     },
   );

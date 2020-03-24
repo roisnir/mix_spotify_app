@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class SimpleFutureBuilder<T> extends StatelessWidget{
+class SimpleFutureBuilder<T> extends StatelessWidget {
   final Future<T> future;
   final Function(BuildContext, T data) builder;
 
@@ -51,34 +51,43 @@ class SimpleFutureBuilder<T> extends StatelessWidget{
       },
     );
   }
-
 }
 
-
 extension PageViewNavigation on PageController {
-  void goToPage(int pageIndex, {duration:const Duration(milliseconds: 300), curve: Curves.easeInOutCubic}) {
+  void goToPage(int pageIndex,
+      {duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOutCubic}) {
     this.animateToPage(pageIndex, duration: duration, curve: curve);
   }
-  void nextPageSimple({duration:const Duration(milliseconds: 240), curve: Curves.easeIn}){
+
+  void nextPageSimple(
+      {duration: const Duration(milliseconds: 240), curve: Curves.easeIn}) {
     final curPage = this.page.toInt();
 //  this.nextPage(duration: duration, curve: curve);
     this.animateToPage(curPage + 1, duration: duration, curve: curve);
   }
-  void prevPageSimple({duration:const Duration(milliseconds: 240), curve: Curves.easeIn}){
+
+  void prevPageSimple(
+      {duration: const Duration(milliseconds: 240), curve: Curves.easeIn}) {
     this.previousPage(duration: duration, curve: curve);
   }
 }
-
 
 extension IterTools<T> on Iterable<T> {
 //  Iterable<> enumerate(){
 //
 //  }
+  bool all(bool Function(T element) test) {
+    for (var element in this)
+      if (!test(element))
+        return false;
+    return true;
+  }
 }
 
-extension DictTools<T1, T2> on Map<T1,T2> {
+extension DictTools<T1, T2> on Map<T1, T2> {
   Iterable<T> dMap<T>(Function(T1, T2) func) sync* {
-    for (var entry in this.entries){
+    for (var entry in this.entries) {
       yield func(entry.key, entry.value);
     }
   }
@@ -87,7 +96,6 @@ extension DictTools<T1, T2> on Map<T1,T2> {
 extension DoubleTools on double {
   bool isInt() => this == this.roundToDouble();
 }
-
 
 class ProgressIndicatorPopup extends StatefulWidget {
   final Future Function() process;
@@ -99,28 +107,33 @@ class ProgressIndicatorPopup extends StatefulWidget {
 }
 
 class _ProgressIndicatorPopupState extends State<ProgressIndicatorPopup> {
-
   @override
   void initState() {
     super.initState();
-    widget.process().then((returnValue)=>Navigator.of(context).pop(returnValue));
+    widget
+        .process()
+        .then((returnValue) => Navigator.of(context).pop(returnValue));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(child: Column(mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        SizedBox(width: 50, height: 50,
-            child: CircularProgressIndicator(backgroundColor: Colors.transparent,)),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text("saving..."),
-        )
-      ],
-    ),
-      backgroundColor: Colors.transparent,);
+    return Dialog(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          SizedBox(
+              width: 50,
+              height: 50,
+              child: CircularProgressIndicator(
+                backgroundColor: Colors.transparent,
+              )),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text("saving..."),
+          )
+        ],
+      ),
+      backgroundColor: Colors.transparent,
+    );
   }
 }
-
-
-
