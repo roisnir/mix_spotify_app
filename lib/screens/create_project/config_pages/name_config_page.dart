@@ -75,7 +75,7 @@ class _NameConfigPageWidgetState extends State<NameConfigPageWidget> {
                   borderRadius: BorderRadius.circular(40)),
             ),
           ),
-          Text(isLoading ? "This could take a while..." : "", style: Theme.of(context).textTheme.subtitle1)
+          Text(isLoading ? "This may take a while..." : "", style: Theme.of(context).textTheme.subtitle1)
         ],
       ),
     );

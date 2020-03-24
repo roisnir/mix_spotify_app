@@ -264,8 +264,8 @@ class ProjectScreenState extends State<ProjectScreen> {
     center: Text(
         "${(project.curIndex / project.totalTracks * 100).toStringAsFixed(1)}%"),
     percent: project.curIndex / project.totalTracks,
-    backgroundColor: Colors.grey,
-    progressColor: Colors.green,
+    backgroundColor: Colors.green[200],
+    progressColor: Colors.green[600],
   );
 
   @override

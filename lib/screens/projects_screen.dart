@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:percent_indicator/percent_indicator.dart';
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/project_manager/projects_db.dart';
 import 'package:spotify_manager/main.dart';
@@ -32,16 +33,30 @@ class ProjectsScreenState extends State<ProjectsScreen> {
   Widget _buildRow(ProjectConfiguration project) {
     return ListTile(
       title: Text(project.name),
-      leading: Icon(Icons.album),
-      trailing: PopupMenuButton(itemBuilder: (c) => [PopupMenuItem(value: 1, child: Text('Delete'),)],onSelected: (v) async {
-        setState(() {
-          _projects.remove(project);
-        });
-        final db = ProjectsDB();
-        await db.removeProject(project.uuid);
-        db.close();
-      }, )
-      ,
+      leading: Icon(Icons.album,),
+      trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: <Widget>[
+              LinearPercentIndicator(
+                width: 80,
+                padding: EdgeInsets.symmetric(horizontal: 3),
+                lineHeight: 15.0,
+                center: Text(
+                    "${(project.curIndex / project.trackIds.length * 100).toStringAsFixed(1)}%", style: Theme.of(context).textTheme.caption.copyWith(fontWeight: FontWeight.bold),),
+                percent: project.curIndex / project.trackIds.length,
+                backgroundColor: Colors.green[200],
+                progressColor: Colors.green[600],
+              ),
+            PopupMenuButton(itemBuilder: (c) => [PopupMenuItem(value: 1, child: Text('Delete'),)],onSelected: (v) async {
+              setState(() {
+                _projects.remove(project);
+              });
+              final db = ProjectsDB();
+              await db.removeProject(project.uuid);
+              db.close();
+            }, )
+          ]),
       onTap: () async => launchProject(context, project),
     );
   }
