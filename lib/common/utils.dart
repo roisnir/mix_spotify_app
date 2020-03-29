@@ -56,7 +56,7 @@ class SimpleFutureBuilder<T> extends StatelessWidget {
 extension PageViewNavigation on PageController {
   void goToPage(int pageIndex,
       {duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOutCubic}) {
+      curve: Curves.easeInOut}) {
     this.animateToPage(pageIndex, duration: duration, curve: curve);
   }
 

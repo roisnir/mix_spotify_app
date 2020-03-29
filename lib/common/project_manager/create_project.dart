@@ -39,8 +39,7 @@ Future<ProjectConfiguration> createDiscoverProject(SpotifyApi api,
   final trackIds = await api.recommendations.get(
       seedArtists: seedArtists,
       seedTracks: seedTracks,
-      limit: limit,
-      market: 'IL').then((recommendations) =>
+      limit: limit).then((recommendations) =>
       recommendations.tracks.map((track) => track.id).toList(growable: false));
   final project = ProjectConfiguration.init(projectName, trackIds, selectedPlaylists.map((playlist) => playlist.id).toList());
   await ProjectsDB().insertProject(project);

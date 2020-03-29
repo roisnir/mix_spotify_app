@@ -70,7 +70,7 @@ class _CreateProjectState extends State<CreateProject> {
       if (configPages[prevPage].key.currentState.validate())
         configPages[prevPage].key.currentState.save();
       else {
-        controller.goToPage(prevPage);
+        controller.goToPage(prevPage, duration: Duration(milliseconds: 10));
         return;
       }
     }
@@ -90,6 +90,7 @@ class _CreateProjectState extends State<CreateProject> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomPadding:false,
       body: Column(children: <Widget>[
         Padding(padding: EdgeInsets.only(bottom: 20),),
         topBar(context),
@@ -107,17 +108,21 @@ class _CreateProjectState extends State<CreateProject> {
         children: configPages.map<Form>((e) => e.build(context)).toList(growable: false),
         controller: controller),)
     ]);
-    if (curPage != configPages.length - 1)
-      column.children.add(bottomBar());
     final pagesState = configPages.map<PageState>((p) =>
       p.current ? PageState.current : p.seen ? PageState.seen : PageState.none).toList(growable: false);
-    column.children.add(PageIndicator(
-      pagesState: pagesState,
-      onPressed: (i)=>controller.goToPage(i),
-      primaryColor: theme.primaryColor,
-      secondaryColor: theme.secondaryHeaderColor,
-      backgroundColor: theme.backgroundColor,
-    ));
+    final stack = Stack(
+      children: <Widget>[
+        PageIndicator(
+          pagesState: pagesState,
+          onPressed: (i)=>controller.goToPage(i),
+          primaryColor: theme.primaryColor,
+          secondaryColor: theme.secondaryHeaderColor,
+          backgroundColor: theme.backgroundColor,
+        )],
+    );
+    if (curPage != configPages.length - 1)
+      stack.children.add(nextButton());
+    column.children.add(stack);
     return column;
   }
 
@@ -134,8 +139,8 @@ class _CreateProjectState extends State<CreateProject> {
         )
       ]);
 
-  Widget bottomBar() => Padding(
-    padding: const EdgeInsets.all(20),
+  Widget nextButton() => Padding(
+    padding: const EdgeInsets.only(top: 10, right: 10),
     child: Align(
       alignment: AlignmentDirectional.bottomEnd,
       child: RaisedButton(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:spotify/spotify_io.dart';
 import 'package:spotify_manager/main.dart';
+import 'package:spotify_manager/screens/create_project/create_discover_project.dart';
 import 'package:spotify_manager/screens/create_project/create_maintain_project.dart';
 import 'package:spotify_manager/screens/create_project/form_fields.dart';
 import 'package:spotify_manager/common/project_manager/project_template.dart';
@@ -15,7 +16,8 @@ final templates = <ProjectTemplate>[
   ProjectTemplate(
       "Discover",
       "Choose tracks you like, get recommendations based on them and sort them to your playlists",
-      Icons.explore),
+      Icons.explore,
+      builder: (playlist)=>CreateDiscoverProject(playlist)),
   ProjectTemplate(
       "Extend",
       "Choose existing playlists, get recommendations based on their tracks and sort them to your playlists",
@@ -54,7 +56,7 @@ class _SelectTemplateState extends State<SelectTemplate> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Padding(padding: EdgeInsets.only(top: 40),),
+        Padding(padding: EdgeInsets.only(top: 50),),
         Text("Choose Template", style: theme.textTheme.headline4),
         Padding(
           padding: const EdgeInsets.only(top: 4, bottom: 20),
