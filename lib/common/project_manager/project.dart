@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:spotify/spotify_io.dart';
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/project_manager/project_playlist.dart';
@@ -39,5 +38,15 @@ class Project {
         config.curIndex,
         config.uuid
     );
+  }
+}
+
+Stream<List<T>> streamRevisions<T>(Stream<T> trackStream, [batchSize=10]) async* {
+  final tracks = <T>[];
+  final tracksIt = StreamIterator(trackStream);
+  while (await tracksIt.moveNext()) {
+    tracks.add(tracksIt.current);
+    if (tracks.length % batchSize == 0)
+      yield tracks;
   }
 }

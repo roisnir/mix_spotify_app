@@ -5,6 +5,7 @@ import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/project_manager/projects_db.dart';
 import 'package:spotify_manager/main.dart';
 import 'package:spotify_manager/screens/create_project/select_template.dart';
+import 'package:spotify_manager/screens/project_list_view.dart';
 import 'project_screen.dart';
 
 const projectsFileName = 'projects.json';
@@ -48,13 +49,23 @@ class ProjectsScreenState extends State<ProjectsScreen> {
                 backgroundColor: Colors.green[200],
                 progressColor: Colors.green[600],
               ),
-            PopupMenuButton(itemBuilder: (c) => [PopupMenuItem(value: 1, child: Text('Delete'),)],onSelected: (v) async {
-              setState(() {
-                _projects.remove(project);
-              });
-              final db = ProjectsDB();
-              await db.removeProject(project.uuid);
-              db.close();
+            PopupMenuButton(itemBuilder: (c) => [
+              PopupMenuItem(value: 1, child: Text("Delete"),),
+              PopupMenuItem(value: 2, child: Text("Preview"),)
+            ],onSelected: (v) async {
+              switch (v){
+                case 1:
+                  final db = ProjectsDB();
+                  await db.removeProject(project.uuid);
+                  db.close();
+                  setState(() {
+                    _projects.remove(project);
+                  });
+                  break;
+                case 2:
+                  launchProjectListView(context, project);
+                  break;
+              }
             }, )
           ]),
       onTap: () async => launchProject(context, project),
@@ -67,6 +78,20 @@ class ProjectsScreenState extends State<ProjectsScreen> {
       return ProjectScreen(
         projectConfig: project,
         client: SpotifyContainer.of(context).client,
+        me: SpotifyContainer.of(context).myDetails,
+      );
+    }));
+    setState(() {
+      project.curIndex = index;
+    });
+  }
+
+launchProjectListView(BuildContext context, ProjectConfiguration project) async {
+    int index = await Navigator.of(context)
+        .push(MaterialPageRoute(builder: (BuildContext subContext) {
+      return ProjectListView(
+        projectConfig: project,
+        api: SpotifyContainer.of(context).client,
         me: SpotifyContainer.of(context).myDetails,
       );
     }));

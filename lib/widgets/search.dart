@@ -15,6 +15,7 @@ class Search extends StatefulWidget {
 
 class _SearchState extends State<Search> {
   Future<SearchResult> searchResultsFuture;
+  String searchQuery;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +31,9 @@ class _SearchState extends State<Search> {
                 hintText: "Search tracks or artists",
                 helperText: "Select music you like"),
             onChanged: (value) => setState(() {
-                  searchResultsFuture = search(widget.api, value);
+                  searchQuery = value;
+                  if (searchQuery.length > 0)
+                    searchResultsFuture = search(widget.api, searchQuery);
                 })),
         Padding(
           padding: EdgeInsets.only(top: 20),
@@ -38,12 +41,11 @@ class _SearchState extends State<Search> {
         Expanded(
           child: FutureBuilder(
             future: searchResultsFuture,
-            initialData: 'null',
             builder: (context, snapshot) {
               if (snapshot.hasData)
-                return snapshot.data == 'null'
-                    ? Container()
-                    : buildSearchResults(context, snapshot.data);
+                return buildSearchResults(context, snapshot.data);
+              if (searchQuery == null || searchQuery.length == 0)
+                return Container();
               if (snapshot.hasError)
                 return Column(
                   children: <Widget>[
