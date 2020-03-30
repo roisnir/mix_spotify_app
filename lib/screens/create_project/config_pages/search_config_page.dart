@@ -98,6 +98,8 @@ class _SearchFormFieldState extends State<SearchFormField> with AutomaticKeepAli
                       sheetSetState(() {
                         selectedItems.tracks.remove(track);
                         state.didChange(selectedItems);
+                        if (selectedItems.length == 0)
+                          Navigator.of(context).pop();
                       });
                     },
                   )))
