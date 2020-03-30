@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:spotify/spotify_io.dart';
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/utils.dart';
-import 'package:spotify_manager/widgets/page_indicator.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:spotify_manager/screens/create_project/config_pages/config_page.dart';
 import 'package:spotify_manager/screens/create_project/config_pages/name_config_page.dart';
 import 'package:spotify_manager/screens/create_project/config_pages/playlists_config_page.dart';
@@ -66,6 +66,7 @@ class _CreateProjectState extends State<CreateProject> {
   }
 
   handlePageChange(){
+    // TODO: remove seen/current on pageconfig and leave only validation here
     if (controller.page > prevPage) { // tried to move to the next page
       if (configPages[prevPage].key.currentState.validate())
         configPages[prevPage].key.currentState.save();
@@ -108,21 +109,22 @@ class _CreateProjectState extends State<CreateProject> {
         children: configPages.map<Form>((e) => e.build(context)).toList(growable: false),
         controller: controller),)
     ]);
-    final pagesState = configPages.map<PageState>((p) =>
-      p.current ? PageState.current : p.seen ? PageState.seen : PageState.none).toList(growable: false);
     final stack = Stack(
       children: <Widget>[
-        PageIndicator(
-          pagesState: pagesState,
-          onPressed: (i)=>controller.goToPage(i),
-          primaryColor: theme.primaryColor,
-          secondaryColor: theme.secondaryHeaderColor,
-          backgroundColor: theme.backgroundColor,
+        Center(
+          child: SmoothPageIndicator(
+            controller: controller,
+            count: configPages.length,
+            effect: WormEffect(dotColor: Colors.green[200], activeDotColor: theme.primaryColor, spacing: 16),
+          ),
         )],
     );
     if (curPage != configPages.length - 1)
       stack.children.add(nextButton());
-    column.children.add(stack);
+    column.children.add(Container(
+      color: theme.backgroundColor,
+      height: 60,
+      child: stack,));
     return column;
   }
 
@@ -140,9 +142,9 @@ class _CreateProjectState extends State<CreateProject> {
       ]);
 
   Widget nextButton() => Padding(
-    padding: const EdgeInsets.only(top: 10, right: 10),
+    padding: const EdgeInsets.only(right: 10),
     child: Align(
-      alignment: AlignmentDirectional.bottomEnd,
+      alignment: AlignmentDirectional.centerEnd,
       child: RaisedButton(
         padding: EdgeInsets.all(12),
         color: Theme.of(context).primaryColor,
