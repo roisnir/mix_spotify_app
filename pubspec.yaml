@@ -43,8 +43,12 @@ dev_dependencies:
   json_serializable:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: "^0.7.3"
 
-
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/mix_app5.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
