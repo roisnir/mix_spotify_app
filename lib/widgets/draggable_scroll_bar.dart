@@ -377,6 +377,7 @@ class _DraggableScrollbarState extends State<DraggableScrollbar>
           //print("LayoutBuilder constraints=$constraints");
 
           return NotificationListener<ScrollNotification>(
+            // ignore: missing_return
             onNotification: (ScrollNotification notification) {
               changePosition(notification);
             },

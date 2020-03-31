@@ -61,12 +61,10 @@ class _CreateProjectState extends State<CreateProject> {
             return widget.onSubmit();
           })
     ]);
-    configPages[0].current = true;
     controller.addListener(handlePageChange);
   }
 
   handlePageChange(){
-    // TODO: remove seen/current on pageconfig and leave only validation here
     if (controller.page > prevPage) { // tried to move to the next page
       if (configPages[prevPage].key.currentState.validate())
         configPages[prevPage].key.currentState.save();
@@ -75,15 +73,8 @@ class _CreateProjectState extends State<CreateProject> {
         return;
       }
     }
-    if (controller.page.round() != prevPage)
-      setState(() {
-        configPages[prevPage].current = false;
-        configPages[controller.page.round()].current = true;
-      });
-    final page = controller.page.toInt();
-    if ((!(controller.page.isInt())) || page == prevPage)
-      return;
-    prevPage = page;
+    if (controller.page.isInt())
+      prevPage = controller.page.toInt();
   }
 
   int get curPage => controller.hasClients ? controller.page.round() : null;
