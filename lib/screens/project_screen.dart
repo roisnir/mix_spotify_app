@@ -26,13 +26,18 @@ class ProjectScreenState extends State<ProjectScreen> {
   void initState() {
     super.initState();
     projectsDB = ProjectsDB();
-    projectFuture =
-        Project.fromConfiguration(widget.projectConfig, widget.client);
+    if (widget.project == null)
+      projectFuture = Project.fromConfiguration(
+          widget.projectConfig, widget.client);
+    else
+      projectFuture = Future.value(widget.project);
     pageController = PageController(initialPage: widget.projectConfig.curIndex);
     player.onPlayerStateChanged.listen((var audioState) {
 //      print("player -> $audioState widget -> $playerState");
-      if (audioState == AudioPlayerState.COMPLETED)
+      if (audioState == AudioPlayerState.COMPLETED && curTrackUrl != null) {
+        setState(() => playerState = AudioPlayerState.PLAYING);
         player.play(curTrackUrl);
+      }
       else if (audioState == AudioPlayerState.PLAYING &&
           playerState == AudioPlayerState.PAUSED) player.pause();
     });
@@ -43,7 +48,12 @@ class ProjectScreenState extends State<ProjectScreen> {
       getProjectTrack(p.curIndex).then((track) {
         curTrackUrl = track.previewUrl;
         player.stop();
-        player.play(curTrackUrl);
+        if (curTrackUrl != null) {
+          setState(() => playerState = AudioPlayerState.PLAYING);
+          player.play(curTrackUrl);
+        }
+        else
+          playerState = AudioPlayerState.STOPPED;
         return track;
       });
     });
@@ -77,6 +87,13 @@ class ProjectScreenState extends State<ProjectScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(backgroundColor: Theme.of(context).canvasColor,
+      elevation: 0,
+      actions: <Widget>[
+        IconButton(icon: Icon(Icons.queue_music),onPressed: (){
+          // TODO: move inside futurebuilder and implement move to list view
+        },)
+      ],),
         body: SimpleFutureBuilder(projectFuture,
           (context, project)=>WillPopScope(
             onWillPop: () async {
@@ -135,12 +152,15 @@ class ProjectScreenState extends State<ProjectScreen> {
         IconButton(
           iconSize: 48,
           icon: Icon(
-            playerState != AudioPlayerState.PAUSED
+            playerState == AudioPlayerState.PLAYING
                 ? Icons.pause
                 : Icons.play_arrow,
           ),
           onPressed: () async {
-            if (curTrackUrl == null) return;
+            if (curTrackUrl == null){
+              setState(() => playerState = AudioPlayerState.PAUSED);
+              return;
+            }
             if (playerState == AudioPlayerState.PAUSED) {
               setState(() => playerState = AudioPlayerState.PLAYING);
               await player.play(curTrackUrl);
@@ -171,7 +191,13 @@ class ProjectScreenState extends State<ProjectScreen> {
               project.playlists.map((p) => p.contains(track)).toList();
           curTrackUrl = track.previewUrl;
           player.stop();
-          player.play(curTrackUrl);
+          if (curTrackUrl != null) {
+            setState(() => playerState = AudioPlayerState.PLAYING);
+            player.play(curTrackUrl);
+          }
+          else {
+            setState(() => playerState = AudioPlayerState.STOPPED);
+          }
           return track;
         });
       },
@@ -276,12 +302,14 @@ class ProjectScreen extends StatefulWidget {
   final ProjectConfiguration projectConfig;
   final SpotifyApi client;
   final User me;
+  final Project project;
 
   ProjectScreen(
       {Key key,
       @required this.projectConfig,
       @required this.client,
-      @required this.me})
+      @required this.me,
+      this.project})
       : super(key: key);
 
   @override

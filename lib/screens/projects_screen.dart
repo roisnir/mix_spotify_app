@@ -51,7 +51,8 @@ class ProjectsScreenState extends State<ProjectsScreen> {
               ),
             PopupMenuButton(itemBuilder: (c) => [
               PopupMenuItem(value: 1, child: Text("Delete"),),
-              PopupMenuItem(value: 2, child: Text("Preview"),)
+              PopupMenuItem(value: 2, child: Text("Player View"),),
+              PopupMenuItem(value: 3, child: Text("List View"),)
             ],onSelected: (v) async {
               switch (v){
                 case 1:
@@ -63,6 +64,9 @@ class ProjectsScreenState extends State<ProjectsScreen> {
                   });
                   break;
                 case 2:
+                  launchProject(context, project);
+                  break;
+                case 3:
                   launchProjectListView(context, project);
                   break;
               }

@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'dart:collection';
+import 'package:audioplayer/audioplayer.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:spotify/spotify_io.dart';
+import 'package:spotify/spotify_io.dart' hide Image;
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/project_manager/project.dart';
 import 'package:spotify_manager/common/project_manager/projects_db.dart';
+import 'package:spotify_manager/screens/project_screen.dart';
 import 'package:spotify_manager/widgets/floating_bar_list_view.dart';
 import 'package:spotify_manager/widgets/search.dart';
 
@@ -13,7 +17,6 @@ class ProjectListView extends StatefulWidget {
   final User me;
   final ProjectsDB db;
   final Project project;
-  final double approxItemSize = 175; // TODO: figure out how to determent programmatically
 
   ProjectListView({@required this.projectConfig,
     @required this.api,
@@ -29,6 +32,9 @@ class _ProjectListViewState extends State<ProjectListView> {
   Project project;
   Stream<List<Track>> tracksRevisions;
   ScrollController scrollController;
+  AudioPlayer player = new AudioPlayer();
+  Queue<String> upNext;
+  int nowPlaying;
   
   @override
   void initState() {
@@ -40,12 +46,45 @@ class _ProjectListViewState extends State<ProjectListView> {
         projectFuture = Future.value(widget.project);
       projectFuture.then((project) {
         setState(() {
-          scrollController = ScrollController(initialScrollOffset: project.curIndex * widget.approxItemSize);
-          tracksRevisions = streamRevisions(project.tracks);
+          scrollController = ScrollController();
+          tracksRevisions = streamRevisions(project.tracks, 50);
           this.project = project;
         });
         return projectFuture;
       });
+    });
+    player.onPlayerStateChanged.listen((var audioState) {
+      if (audioState != AudioPlayerState.COMPLETED || upNext.length <= 0)
+        return;
+      play(upNext, nowPlaying + 1);
+    });
+  }
+
+  @override
+  void dispose() {
+    upNext = Queue<String>();
+    player.stop();
+    super.dispose();
+  }
+
+  play(Iterable<String> _upNext, int index) async {
+    upNext = Queue.from(_upNext);
+    final track = upNext.removeFirst();
+    if (track == null)
+      pause();
+    if (player.state != AudioPlayerState.STOPPED)
+      await player.stop();
+    await player.play(track);
+    setState(() {
+      project.curIndex = index;
+      nowPlaying = index;
+    });
+  }
+
+  pause() async {
+    await player.pause();
+    setState(() {
+      nowPlaying = null;
     });
   }
 
@@ -74,6 +113,19 @@ class _ProjectListViewState extends State<ProjectListView> {
             return FloatingBarListView(
               controller: scrollController,
               appBar: SliverAppBar(
+                actions: <Widget>[IconButton(icon: Icon(Icons.subscriptions),onPressed: ()async{
+                  final newCurIndex = await Navigator.of(context).push(
+                      MaterialPageRoute(builder: (BuildContext subContext) {
+                        return ProjectScreen(
+                          projectConfig: widget.projectConfig,
+                          client: widget.api,
+                          me: widget.me,
+                          project: project,
+                        );
+                      })
+                  );
+                  Navigator.of(context).pop(newCurIndex);
+                },)],
                 floating: true,
                 backgroundColor: Theme.of(context).backgroundColor,
                 expandedHeight: 150,
@@ -100,8 +152,11 @@ class _ProjectListViewState extends State<ProjectListView> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
                     TrackTile(tracks[i], onTap: (track)async{
-                      // TODO: play song
-                    },),
+                      if (nowPlaying == i)
+                        await pause();
+                      else
+                        await play(tracks.sublist(1).map((t) => t.previewUrl), i);
+                    }, trailing: nowPlaying == i ? Icon(Icons.pause):null,),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 15),
                       child: Wrap(
