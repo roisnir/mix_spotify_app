@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:spotify/spotify_io.dart';
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/utils.dart';
-import 'package:spotify_manager/widgets/page_indicator.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:spotify_manager/screens/create_project/config_pages/config_page.dart';
 import 'package:spotify_manager/screens/create_project/config_pages/name_config_page.dart';
 import 'package:spotify_manager/screens/create_project/config_pages/playlists_config_page.dart';
@@ -61,7 +61,6 @@ class _CreateProjectState extends State<CreateProject> {
             return widget.onSubmit();
           })
     ]);
-    configPages[0].current = true;
     controller.addListener(handlePageChange);
   }
 
@@ -70,19 +69,12 @@ class _CreateProjectState extends State<CreateProject> {
       if (configPages[prevPage].key.currentState.validate())
         configPages[prevPage].key.currentState.save();
       else {
-        controller.goToPage(prevPage);
+        controller.goToPage(prevPage, duration: Duration(milliseconds: 10));
         return;
       }
     }
-    if (controller.page.round() != prevPage)
-      setState(() {
-        configPages[prevPage].current = false;
-        configPages[controller.page.round()].current = true;
-      });
-    final page = controller.page.toInt();
-    if ((!(controller.page.isInt())) || page == prevPage)
-      return;
-    prevPage = page;
+    if (controller.page.isInt())
+      prevPage = controller.page.toInt();
   }
 
   int get curPage => controller.hasClients ? controller.page.round() : null;
@@ -90,6 +82,7 @@ class _CreateProjectState extends State<CreateProject> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomPadding:false,
       body: Column(children: <Widget>[
         Padding(padding: EdgeInsets.only(bottom: 20),),
         topBar(context),
@@ -107,17 +100,22 @@ class _CreateProjectState extends State<CreateProject> {
         children: configPages.map<Form>((e) => e.build(context)).toList(growable: false),
         controller: controller),)
     ]);
+    final stack = Stack(
+      children: <Widget>[
+        Center(
+          child: SmoothPageIndicator(
+            controller: controller,
+            count: configPages.length,
+            effect: WormEffect(dotColor: Colors.green[200], activeDotColor: theme.primaryColor, spacing: 16),
+          ),
+        )],
+    );
     if (curPage != configPages.length - 1)
-      column.children.add(bottomBar());
-    final pagesState = configPages.map<PageState>((p) =>
-      p.current ? PageState.current : p.seen ? PageState.seen : PageState.none).toList(growable: false);
-    column.children.add(PageIndicator(
-      pagesState: pagesState,
-      onPressed: (i)=>controller.goToPage(i),
-      primaryColor: theme.primaryColor,
-      secondaryColor: theme.secondaryHeaderColor,
-      backgroundColor: theme.backgroundColor,
-    ));
+      stack.children.add(nextButton());
+    column.children.add(Container(
+      color: theme.backgroundColor,
+      height: 60,
+      child: stack,));
     return column;
   }
 
@@ -134,10 +132,10 @@ class _CreateProjectState extends State<CreateProject> {
         )
       ]);
 
-  Widget bottomBar() => Padding(
-    padding: const EdgeInsets.all(20),
+  Widget nextButton() => Padding(
+    padding: const EdgeInsets.only(right: 10),
     child: Align(
-      alignment: AlignmentDirectional.bottomEnd,
+      alignment: AlignmentDirectional.centerEnd,
       child: RaisedButton(
         padding: EdgeInsets.all(12),
         color: Theme.of(context).primaryColor,

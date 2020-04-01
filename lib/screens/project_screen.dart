@@ -10,6 +10,8 @@ import 'package:spotify_manager/common/project_manager/projects_db.dart';
 import 'package:spotify_manager/screens/create_project/form_fields.dart';
 import 'package:spotify_manager/common/utils.dart';
 import 'package:marquee/marquee.dart';
+import 'package:spotify_manager/screens/project_list_view.dart';
+import 'package:spotify_manager/widgets/error.dart';
 
 class ProjectScreenState extends State<ProjectScreen> {
   Future<Project> projectFuture;
@@ -26,13 +28,18 @@ class ProjectScreenState extends State<ProjectScreen> {
   void initState() {
     super.initState();
     projectsDB = ProjectsDB();
-    projectFuture =
-        Project.fromConfiguration(widget.projectConfig, widget.client);
+    if (widget.project == null)
+      projectFuture = Project.fromConfiguration(
+          widget.projectConfig, widget.client);
+    else
+      projectFuture = Future.value(widget.project);
     pageController = PageController(initialPage: widget.projectConfig.curIndex);
     player.onPlayerStateChanged.listen((var audioState) {
 //      print("player -> $audioState widget -> $playerState");
-      if (audioState == AudioPlayerState.COMPLETED)
+      if (audioState == AudioPlayerState.COMPLETED && curTrackUrl != null) {
+        setState(() => playerState = AudioPlayerState.PLAYING);
         player.play(curTrackUrl);
+      }
       else if (audioState == AudioPlayerState.PLAYING &&
           playerState == AudioPlayerState.PAUSED) player.pause();
     });
@@ -43,7 +50,12 @@ class ProjectScreenState extends State<ProjectScreen> {
       getProjectTrack(p.curIndex).then((track) {
         curTrackUrl = track.previewUrl;
         player.stop();
-        player.play(curTrackUrl);
+        if (curTrackUrl != null) {
+          setState(() => playerState = AudioPlayerState.PLAYING);
+          player.play(curTrackUrl);
+        }
+        else
+          playerState = AudioPlayerState.STOPPED;
         return track;
       });
     });
@@ -66,31 +78,64 @@ class ProjectScreenState extends State<ProjectScreen> {
     for (int i = 0; i < playlists.length; i++) {
       final playlist = playlists[i];
       if ((!initialPlaylists[i] && curSelectedPlaylists[i])) {
-        print("adding ${track.name} -> ${playlist.name}");
-        await client.playlists.addTrack(track.uri, playlist.id);
-        playlist.trackIds.add(track.id);
+        await playlist.addTrack(client, track);
       }
       if (initialPlaylists[i] && !curSelectedPlaylists[i]) {
-        print("removing ${track.name} -> ${playlist.name}");
-        await client.playlists.removeTrack(track.uri, playlist.id);
-        playlist.trackIds.remove(track.id);
+        await playlist.removeTrack(client, track);
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: SimpleFutureBuilder(projectFuture,
-          (context, project)=>WillPopScope(
-            onWillPop: () async {
-              Navigator.of(context).pop((await projectFuture).curIndex);
-              return false;
-            },
-            child: Column(
-      children: buildButtonsTopBar() + <Widget>[
-        buildBody(project),
-        Padding(
+    return FutureBuilder<Project>(
+      future: projectFuture,
+      builder: (c, snapshot){
+        if (snapshot.hasData)
+          return bodyBuilder(c, snapshot.data);
+        Widget innerWidget;
+        if (snapshot.hasError)
+          innerWidget = Error("Error: ${snapshot.error}");
+        else
+          innerWidget = CircularProgressIndicator();
+        return Scaffold(
+          appBar: AppBar(backgroundColor: Theme.of(context).canvasColor, elevation: 0,),
+          body: Center(child: innerWidget,),
+        );
+      },
+    );
+  }
+
+  Widget bodyBuilder(BuildContext context, Project project){
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.of(context).pop((await projectFuture).curIndex);
+        return false;
+        },
+      child: Scaffold(
+          appBar: AppBar(backgroundColor: Theme.of(context).canvasColor,
+      elevation: 0,
+      actions: <Widget>[
+        IconButton(icon: Icon(Icons.queue_music),onPressed: () async {
+          await player.stop();
+          final newCurIndex = await Navigator.of(context).push(
+              MaterialPageRoute(builder: (BuildContext subContext) {
+                return ProjectListView(
+                  projectConfig: widget.projectConfig,
+                  api: widget.client,
+                  me: widget.me,
+                  project: project,
+                );
+              })
+          );
+          Navigator.of(context).pop(newCurIndex);
+      },),
+        pauseButton
+      ],),
+      body: Column(
+        children: <Widget>[
+          buildBody(project),
+          Padding(
             padding: const EdgeInsets.only(left: 40, right: 40, top: 20, bottom: 40),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -113,50 +158,36 @@ class ProjectScreenState extends State<ProjectScreen> {
                 ),
               ],
             ),
-        ),
-        buildPercentIndicator(project)
-      ],
-    ),
           ),
-        ));
+          buildPercentIndicator(project)
+        ],
+      )
+
+      ),
+    );
   }
 
-  List<Widget> buildButtonsTopBar() => [
-    Padding(
-    padding: EdgeInsets.only(bottom: 20),
-  ),
-    Row(
-      children: <Widget>[
-        IconButton(
-          iconSize: 48,
-          icon: Icon(
-            Icons.keyboard_arrow_down,
-          ),
-          onPressed: () async {
-            Navigator.of(context).pop((await projectFuture).curIndex);
-          },
-        ),
-        IconButton(
-          iconSize: 48,
-          icon: Icon(
-            playerState != AudioPlayerState.PAUSED
-                ? Icons.pause
-                : Icons.play_arrow,
-          ),
-          onPressed: () async {
-            if (curTrackUrl == null) return;
-            if (playerState == AudioPlayerState.PAUSED) {
-              setState(() => playerState = AudioPlayerState.PLAYING);
-              await player.play(curTrackUrl);
-            } else {
-              setState(() => playerState = AudioPlayerState.PAUSED);
-              await player.pause();
-            }
-          },
-        ),
-      ],
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    )];
+  Widget get pauseButton => IconButton(
+//    iconSize: 48,
+    icon: Icon(
+      playerState == AudioPlayerState.PLAYING
+          ? Icons.pause
+          : Icons.play_arrow,
+    ),
+    onPressed: () async {
+      if (curTrackUrl == null){
+        setState(() => playerState = AudioPlayerState.PAUSED);
+        return;
+      }
+      if (playerState == AudioPlayerState.PAUSED) {
+        setState(() => playerState = AudioPlayerState.PLAYING);
+        await player.play(curTrackUrl);
+      } else {
+        setState(() => playerState = AudioPlayerState.PAUSED);
+        await player.pause();
+      }
+    },
+  );
 
   buildBody(Project project) => Expanded(
     child: PageView.builder(
@@ -175,7 +206,13 @@ class ProjectScreenState extends State<ProjectScreen> {
               project.playlists.map((p) => p.contains(track)).toList();
           curTrackUrl = track.previewUrl;
           player.stop();
-          player.play(curTrackUrl);
+          if (curTrackUrl != null) {
+            setState(() => playerState = AudioPlayerState.PLAYING);
+            player.play(curTrackUrl);
+          }
+          else {
+            setState(() => playerState = AudioPlayerState.STOPPED);
+          }
           return track;
         });
       },
@@ -264,8 +301,8 @@ class ProjectScreenState extends State<ProjectScreen> {
     center: Text(
         "${(project.curIndex / project.totalTracks * 100).toStringAsFixed(1)}%"),
     percent: project.curIndex / project.totalTracks,
-    backgroundColor: Colors.grey,
-    progressColor: Colors.green,
+    backgroundColor: Colors.green[200],
+    progressColor: Colors.green[600],
   );
 
   @override
@@ -280,12 +317,14 @@ class ProjectScreen extends StatefulWidget {
   final ProjectConfiguration projectConfig;
   final SpotifyApi client;
   final User me;
+  final Project project;
 
   ProjectScreen(
       {Key key,
       @required this.projectConfig,
       @required this.client,
-      @required this.me})
+      @required this.me,
+      this.project})
       : super(key: key);
 
   @override

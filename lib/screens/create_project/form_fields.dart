@@ -131,7 +131,7 @@ class PlaylistsSelection extends FormField<List<bool>> {
     return GridView.count(
       padding: EdgeInsets.all(30),
       crossAxisCount: 3,
-      childAspectRatio: 0.83,
+      childAspectRatio: 0.75,
       mainAxisSpacing: 20,
       crossAxisSpacing: 20,
       children: buttons,
