@@ -114,6 +114,7 @@ class _ProjectListViewState extends State<ProjectListView> {
               controller: scrollController,
               appBar: SliverAppBar(
                 actions: <Widget>[IconButton(icon: Icon(Icons.subscriptions),onPressed: ()async{
+                  await player.stop();
                   final newCurIndex = await Navigator.of(context).push(
                       MaterialPageRoute(builder: (BuildContext subContext) {
                         return ProjectScreen(

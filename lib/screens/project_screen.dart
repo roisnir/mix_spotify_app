@@ -10,6 +10,8 @@ import 'package:spotify_manager/common/project_manager/projects_db.dart';
 import 'package:spotify_manager/screens/create_project/form_fields.dart';
 import 'package:spotify_manager/common/utils.dart';
 import 'package:marquee/marquee.dart';
+import 'package:spotify_manager/screens/project_list_view.dart';
+import 'package:spotify_manager/widgets/error.dart';
 
 class ProjectScreenState extends State<ProjectScreen> {
   Future<Project> projectFuture;
@@ -86,24 +88,54 @@ class ProjectScreenState extends State<ProjectScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(backgroundColor: Theme.of(context).canvasColor,
+    return FutureBuilder<Project>(
+      future: projectFuture,
+      builder: (c, snapshot){
+        if (snapshot.hasData)
+          return bodyBuilder(c, snapshot.data);
+        Widget innerWidget;
+        if (snapshot.hasError)
+          innerWidget = Error("Error: ${snapshot.error}");
+        else
+          innerWidget = CircularProgressIndicator();
+        return Scaffold(
+          appBar: AppBar(backgroundColor: Theme.of(context).canvasColor, elevation: 0,),
+          body: Center(child: innerWidget,),
+        );
+      },
+    );
+  }
+
+  Widget bodyBuilder(BuildContext context, Project project){
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.of(context).pop((await projectFuture).curIndex);
+        return false;
+        },
+      child: Scaffold(
+          appBar: AppBar(backgroundColor: Theme.of(context).canvasColor,
       elevation: 0,
       actions: <Widget>[
-        IconButton(icon: Icon(Icons.queue_music),onPressed: (){
-          // TODO: move inside futurebuilder and implement move to list view
-        },)
+        IconButton(icon: Icon(Icons.queue_music),onPressed: () async {
+          await player.stop();
+          final newCurIndex = await Navigator.of(context).push(
+              MaterialPageRoute(builder: (BuildContext subContext) {
+                return ProjectListView(
+                  projectConfig: widget.projectConfig,
+                  api: widget.client,
+                  me: widget.me,
+                  project: project,
+                );
+              })
+          );
+          Navigator.of(context).pop(newCurIndex);
+      },),
+        pauseButton
       ],),
-        body: SimpleFutureBuilder(projectFuture,
-          (context, project)=>WillPopScope(
-            onWillPop: () async {
-              Navigator.of(context).pop((await projectFuture).curIndex);
-              return false;
-            },
-            child: Column(
-      children: buildButtonsTopBar() + <Widget>[
-        buildBody(project),
-        Padding(
+      body: Column(
+        children: <Widget>[
+          buildBody(project),
+          Padding(
             padding: const EdgeInsets.only(left: 40, right: 40, top: 20, bottom: 40),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -126,53 +158,36 @@ class ProjectScreenState extends State<ProjectScreen> {
                 ),
               ],
             ),
-        ),
-        buildPercentIndicator(project)
-      ],
-    ),
           ),
-        ));
+          buildPercentIndicator(project)
+        ],
+      )
+
+      ),
+    );
   }
 
-  List<Widget> buildButtonsTopBar() => [
-    Padding(
-    padding: EdgeInsets.only(bottom: 20),
-  ),
-    Row(
-      children: <Widget>[
-        IconButton(
-          iconSize: 48,
-          icon: Icon(
-            Icons.keyboard_arrow_down,
-          ),
-          onPressed: () async {
-            Navigator.of(context).pop((await projectFuture).curIndex);
-          },
-        ),
-        IconButton(
-          iconSize: 48,
-          icon: Icon(
-            playerState == AudioPlayerState.PLAYING
-                ? Icons.pause
-                : Icons.play_arrow,
-          ),
-          onPressed: () async {
-            if (curTrackUrl == null){
-              setState(() => playerState = AudioPlayerState.PAUSED);
-              return;
-            }
-            if (playerState == AudioPlayerState.PAUSED) {
-              setState(() => playerState = AudioPlayerState.PLAYING);
-              await player.play(curTrackUrl);
-            } else {
-              setState(() => playerState = AudioPlayerState.PAUSED);
-              await player.pause();
-            }
-          },
-        ),
-      ],
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    )];
+  Widget get pauseButton => IconButton(
+//    iconSize: 48,
+    icon: Icon(
+      playerState == AudioPlayerState.PLAYING
+          ? Icons.pause
+          : Icons.play_arrow,
+    ),
+    onPressed: () async {
+      if (curTrackUrl == null){
+        setState(() => playerState = AudioPlayerState.PAUSED);
+        return;
+      }
+      if (playerState == AudioPlayerState.PAUSED) {
+        setState(() => playerState = AudioPlayerState.PLAYING);
+        await player.play(curTrackUrl);
+      } else {
+        setState(() => playerState = AudioPlayerState.PAUSED);
+        await player.pause();
+      }
+    },
+  );
 
   buildBody(Project project) => Expanded(
     child: PageView.builder(
