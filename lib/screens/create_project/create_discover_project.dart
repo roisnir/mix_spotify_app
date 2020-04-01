@@ -26,7 +26,7 @@ class _CreateDiscoverProjectState extends State<CreateDiscoverProject> {
         api,
         selectedItems.artists.map((artist) => artist.id).toList(),
         selectedItems.tracks.map((track) => track.id).toList(),
-        widget.playlists,
+        selectedPlaylists,
         projectName);
   }
 
