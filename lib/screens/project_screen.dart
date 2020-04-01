@@ -66,14 +66,10 @@ class ProjectScreenState extends State<ProjectScreen> {
     for (int i = 0; i < playlists.length; i++) {
       final playlist = playlists[i];
       if ((!initialPlaylists[i] && curSelectedPlaylists[i])) {
-        print("adding ${track.name} -> ${playlist.name}");
-        await client.playlists.addTrack(track.uri, playlist.id);
-        playlist.trackIds.add(track.id);
+        await playlist.addTrack(client, track);
       }
       if (initialPlaylists[i] && !curSelectedPlaylists[i]) {
-        print("removing ${track.name} -> ${playlist.name}");
-        await client.playlists.removeTrack(track.uri, playlist.id);
-        playlist.trackIds.remove(track.id);
+        await playlist.removeTrack(client, track);
       }
     }
   }

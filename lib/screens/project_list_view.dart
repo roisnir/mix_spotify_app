@@ -12,8 +12,13 @@ class ProjectListView extends StatefulWidget {
   final SpotifyApi api;
   final User me;
   final ProjectsDB db;
-  
-  ProjectListView({this.projectConfig, this.api, this.me}) : db = ProjectsDB();
+  final Project project;
+  final double approxItemSize = 175; // TODO: figure out how to determent programmatically
+
+  ProjectListView({@required this.projectConfig,
+    @required this.api,
+    @required  this.me,
+    this.project}) : db = ProjectsDB();
 
   @override
   _ProjectListViewState createState() => _ProjectListViewState();
@@ -28,10 +33,14 @@ class _ProjectListViewState extends State<ProjectListView> {
   @override
   void initState() {
     super.initState();
-    scrollController = ScrollController();
     setState(() {
-      projectFuture = Project.fromConfiguration(widget.projectConfig, widget.api)..then((project) {
+      if (widget.project == null)
+        projectFuture = Project.fromConfiguration(widget.projectConfig, widget.api);
+      else
+        projectFuture = Future.value(widget.project);
+      projectFuture.then((project) {
         setState(() {
+          scrollController = ScrollController(initialScrollOffset: project.curIndex * widget.approxItemSize);
           tracksRevisions = streamRevisions(project.tracks);
           this.project = project;
         });
@@ -90,18 +99,31 @@ class _ProjectListViewState extends State<ProjectListView> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    TrackTile(tracks[i], onTap: (track){
-                      // TODO: add/remove from playlist
+                    TrackTile(tracks[i], onTap: (track)async{
+                      // TODO: play song
                     },),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 15),
                       child: Wrap(
                         spacing: 5,
-                        children: project.playlists.map<Widget>((playlist) =>
-                          ChoiceChip(
-                            selected: playlist.contains(tracks[i]),
-                            label: Text(playlist.name),
-                          )).toList(),),
+                        children: project.playlists.map<Widget>((playlist) {
+                          final selected = playlist.contains(tracks[i]);
+                          return ChoiceChip(
+                            selectedColor: theme.buttonColor,
+                            onSelected: (value) async {
+                              if (value)
+                                await playlist.addTrack(widget.api, tracks[i]);
+                              else
+                                await playlist.removeTrack(widget.api, tracks[i]);
+                              setState(() {
+                              });
+                              project.curIndex = i;
+                              },
+                            selected: selected,
+                            label: Text(playlist.name, style: selected?
+                              TextStyle(color: theme.textTheme.button.color, fontWeight: FontWeight.w500):TextStyle(color: Colors.white70)),
+                          );
+                        }).toList(),),
                     )
                   ],
                 );
