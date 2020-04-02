@@ -11,9 +11,9 @@ class HomeNav extends StatefulWidget {
 
 class HomeNavState extends State<HomeNav> {
   int _selectedIndex = 0;
-  static List<Widget> _screens = <Widget>[
+  List<Widget> _screens(BuildContext context) => <Widget>[
     ProjectsScreen(),
-    HomeScreen()
+    HomeScreen(SpotifyContainer.of(context).client, SpotifyContainer.of(context).myDetails)
   ];
 
 
@@ -35,7 +35,7 @@ class HomeNavState extends State<HomeNav> {
         child: Column(children: <Widget>[
           Padding(padding: EdgeInsets.only(bottom: 20),),
           Row(mainAxisAlignment: MainAxisAlignment.end,children: <Widget>[IconButton(icon: Icon(Icons.settings,),onPressed: (){},)],),
-          Expanded(child: _screens.elementAt(_selectedIndex),)
+          Expanded(child: _screens(context).elementAt(_selectedIndex),)
         ],),
       ),
       bottomNavigationBar: Container(
