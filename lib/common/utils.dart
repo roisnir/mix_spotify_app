@@ -2,6 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+enum DialogResult {
+  Yes,
+  No,
+  Cancel,
+}
+
 class SimpleFutureBuilder<T> extends StatelessWidget {
   final Future<T> future;
   final Function(BuildContext, T data) builder;

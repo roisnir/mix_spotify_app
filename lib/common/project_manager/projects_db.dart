@@ -11,20 +11,24 @@ class ProjectsDB {
   ProjectsDB(){
     _db = () async {
 //        await deleteDatabase(dbName);
-        return await openDatabase(dbName, version: 1, onCreate: (db, v){
+        return await openDatabase(dbName, version: 4, onCreate: (db, v) async {
           print("creating DB...");
-          db.execute('CREATE TABLE $projectsTable('
+          await db.execute('CREATE TABLE $projectsTable('
               'uuid TEXT PRIMARY KEY,'
               'name TEXT,'
               'curIndex INTEGER,'
               'playlistIds Text,' // TODO: open an issue of , bug
+              'type TEXT,'
+              'lastModified TEXT DEFAULT CURRENT_TIMESTAMP,'
+              'isArchived INTEGER,'
               'isActive INTEGER'
               ')');
-          db.execute('CREATE TABLE $tracksTable('
+          await db.execute('CREATE TABLE $tracksTable('
               'trackId TEXT,'
               'projectUuid TEXT'
               ')');
-        });
+        },
+        );
   }();
   }
 
@@ -47,6 +51,15 @@ class ProjectsDB {
     await (await _db).update(projectsTable, {'curIndex': index}, where: "uuid = ?", whereArgs: [projectUuid]);
   }
 
+  Future<DateTime> setIsArchived(String projectUuid, bool value) async {
+    final mtime = DateTime.now();
+    await (await _db).update(projectsTable, {
+      'isArchived': value ? 1 : 0,
+      'lastModified': mtime.toIso8601String()},
+        where: "uuid = ?", whereArgs: [projectUuid]);
+    return mtime;
+  }
+
   removeProject(String projectUuid) async {
     final batch = (await _db).batch();
     batch.delete(projectsTable, where:'uuid = ?', whereArgs: [projectUuid]);
@@ -56,7 +69,7 @@ class ProjectsDB {
 
   Future<List<ProjectConfiguration>> getProjectsConf() async {
     final db = (await _db);
-    final futures = (await db.query(projectsTable)).map(
+    final futures = (await db.query(projectsTable, orderBy: "lastModified DESC")).map(
         (projectJson) async {
           final uuid = projectJson['uuid'];
           final tracks = (await db.query(
