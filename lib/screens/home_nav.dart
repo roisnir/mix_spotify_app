@@ -12,14 +12,14 @@ class HomeNav extends StatefulWidget {
 class HomeNavState extends State<HomeNav> {
   int _selectedIndex = 0;
   List<Widget> _screens(BuildContext context) => <Widget>[
-    ProjectsScreen(),
-    HomeScreen(SpotifyContainer.of(context).client, SpotifyContainer.of(context).myDetails)
+    HomeScreen(SpotifyContainer.of(context).client, SpotifyContainer.of(context).myDetails),
+    ProjectsScreen()
   ];
 
 
   static const _navItems = [
-    BottomNavigationBarItem(icon: Icon(Icons.reorder), title: Text("Projects")),
-    BottomNavigationBarItem(icon: Icon(Icons.home), title: Text("Home"))
+    BottomNavigationBarItem(icon: Icon(Icons.home), title: Text("Home")),
+    BottomNavigationBarItem(icon: Icon(Icons.reorder), title: Text("Projects"))
   ];
 
   void _onItemTapped(int index) {
@@ -33,8 +33,7 @@ class HomeNavState extends State<HomeNav> {
     return Scaffold(
       body: Center(
         child: Column(children: <Widget>[
-          Padding(padding: EdgeInsets.only(bottom: 20),),
-          Row(mainAxisAlignment: MainAxisAlignment.end,children: <Widget>[IconButton(icon: Icon(Icons.settings,),onPressed: (){},)],),
+          Padding(padding: EdgeInsets.only(bottom: 30),),
           Expanded(child: _screens(context).elementAt(_selectedIndex),)
         ],),
       ),
