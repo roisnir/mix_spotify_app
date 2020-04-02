@@ -1,8 +1,8 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/project_manager/projects_db.dart';
+import 'package:spotify_manager/common/project_manager/projects_endpoint.dart';
 import 'package:spotify_manager/common/utils.dart';
 import 'package:spotify_manager/main.dart';
 import 'package:spotify_manager/screens/create_project/select_template.dart';
@@ -22,14 +22,6 @@ class ProjectsScreenState extends State<ProjectsScreen> {
       _projects = projects;
       isLoading = false;
     }));
-  }
-
-  Future<List<ProjectConfiguration>> loadProjects() async {
-    final db = ProjectsDB();
-    final projects = List<ProjectConfiguration>.from(await db.getProjectsConf());
-    db.close();
-    return projects;
-
   }
 
   Widget projectIcon(String projectType, [Color accentColor=Colors.green]){
@@ -137,6 +129,9 @@ class ProjectsScreenState extends State<ProjectsScreen> {
     setState(() {
       project.curIndex = index;
     });
+    final db = ProjectsDB();
+    await db.updateIndex(project.uuid, index);
+    db.close();
   }
 
 launchProjectListView(BuildContext context, ProjectConfiguration project) async {
@@ -151,6 +146,9 @@ launchProjectListView(BuildContext context, ProjectConfiguration project) async 
     setState(() {
       project.curIndex = index;
     });
+    final db = ProjectsDB();
+    await db.updateIndex(project.uuid, index);
+    db.close();
   }
 
   @override
@@ -187,7 +185,7 @@ launchProjectListView(BuildContext context, ProjectConfiguration project) async 
             setState(() {
               _projects.add(newProject);
             });
-            await launchProject(context, newProject);
+            await launchProjectListView(context, newProject);
           }
         },
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:spotify_manager/main.dart';
+import 'package:spotify_manager/screens/home_screen.dart';
 import 'package:spotify_manager/screens/projects_screen.dart';
 
 class HomeNav extends StatefulWidget {
@@ -10,15 +11,15 @@ class HomeNav extends StatefulWidget {
 
 class HomeNavState extends State<HomeNav> {
   int _selectedIndex = 0;
-  static List<Widget> _screens = <Widget>[
-    ProjectsScreen(),
-    HomeScreen()
+  List<Widget> _screens(BuildContext context) => <Widget>[
+    HomeScreen(SpotifyContainer.of(context).client, SpotifyContainer.of(context).myDetails),
+    ProjectsScreen()
   ];
 
 
   static const _navItems = [
-    BottomNavigationBarItem(icon: Icon(Icons.reorder), title: Text("Projects")),
-    BottomNavigationBarItem(icon: Icon(Icons.home), title: Text("Home"))
+    BottomNavigationBarItem(icon: Icon(Icons.home), title: Text("Home")),
+    BottomNavigationBarItem(icon: Icon(Icons.reorder), title: Text("Projects"))
   ];
 
   void _onItemTapped(int index) {
@@ -32,9 +33,8 @@ class HomeNavState extends State<HomeNav> {
     return Scaffold(
       body: Center(
         child: Column(children: <Widget>[
-          Padding(padding: EdgeInsets.only(bottom: 20),),
-          Row(mainAxisAlignment: MainAxisAlignment.end,children: <Widget>[IconButton(icon: Icon(Icons.settings,),onPressed: (){},)],),
-          Expanded(child: _screens.elementAt(_selectedIndex),)
+          Padding(padding: EdgeInsets.only(bottom: 30),),
+          Expanded(child: _screens(context).elementAt(_selectedIndex),)
         ],),
       ),
       bottomNavigationBar: Container(
@@ -49,15 +49,5 @@ class HomeNavState extends State<HomeNav> {
         ),
       ),
     );
-  }
-}
-
-
-class HomeScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return
-      Column(children: <Widget>[
-    Text("Hello ${SpotifyContainer.of(context).myDetails.displayName}!")]);
   }
 }
