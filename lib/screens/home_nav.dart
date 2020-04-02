@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:spotify_manager/main.dart';
+import 'package:spotify_manager/screens/home_screen.dart';
 import 'package:spotify_manager/screens/projects_screen.dart';
 
 class HomeNav extends StatefulWidget {
@@ -49,15 +50,5 @@ class HomeNavState extends State<HomeNav> {
         ),
       ),
     );
-  }
-}
-
-
-class HomeScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return
-      Column(children: <Widget>[
-    Text("Hello ${SpotifyContainer.of(context).myDetails.displayName}!")]);
   }
 }
