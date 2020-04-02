@@ -10,7 +10,7 @@ Future<ProjectConfiguration> createSavedSongsProject(SpotifyApi client,
       .map((t) => t.track.id)
       .toList();
   final project = ProjectConfiguration.init(
-      projectName, tracksIds, playlistIds.toList());
+      projectName, tracksIds, playlistIds.toList(), "SavedSongs");
   await ProjectsDB().insertProject(project);
   return project;
 }
@@ -26,7 +26,7 @@ Future<ProjectConfiguration> createMaintainProject(SpotifyApi api,
       .map<String>((t) => t.track.id)
       .toList();
   final project = ProjectConfiguration.init(projectName, tracksIds,
-      selectedPlaylists.map((playlist) => playlist.id).toList());
+      selectedPlaylists.map((playlist) => playlist.id).toList(), "Maintain");
   await ProjectsDB().insertProject(project);
   return project;
 }
@@ -41,7 +41,7 @@ Future<ProjectConfiguration> createDiscoverProject(SpotifyApi api,
       seedTracks: seedTracks,
       limit: limit).then((recommendations) =>
       recommendations.tracks.map((track) => track.id).toList(growable: false));
-  final project = ProjectConfiguration.init(projectName, trackIds, selectedPlaylists.map((playlist) => playlist.id).toList());
+  final project = ProjectConfiguration.init(projectName, trackIds, selectedPlaylists.map((playlist) => playlist.id).toList(), "Discover");
   await ProjectsDB().insertProject(project);
   return project;
 }

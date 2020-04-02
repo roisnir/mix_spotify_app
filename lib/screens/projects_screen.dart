@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/project_manager/projects_db.dart';
+import 'package:spotify_manager/common/utils.dart';
 import 'package:spotify_manager/main.dart';
 import 'package:spotify_manager/screens/create_project/select_template.dart';
 import 'package:spotify_manager/screens/project_list_view.dart';
@@ -31,10 +32,39 @@ class ProjectsScreenState extends State<ProjectsScreen> {
 
   }
 
-  Widget _buildRow(ProjectConfiguration project) {
+  Widget projectIcon(String projectType, [Color accentColor=Colors.green]){
+    var subIcon;
+    switch (projectType){
+      case "SavedSongs":
+        subIcon = Icons.favorite;
+        break;
+      case "Discover":
+        subIcon = Icons.explore;
+        break;
+      case "Extend":
+        subIcon = Icons.all_out;
+        break;
+      case "Maintain":
+        subIcon = Icons.build;
+        break;
+    }
+    return SizedBox(
+      width: 32, height: 32,
+      child: Stack(
+        alignment: Alignment.center,
+        children: <Widget>[
+          Icon(Icons.sort, size: 28,),
+          Align(alignment: Alignment.bottomRight, child: Icon(subIcon, size: 16, color: accentColor,))
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRow(BuildContext context, ProjectConfiguration project) {
     return ListTile(
       title: Text(project.name),
-      leading: Icon(Icons.album,),
+      leading: projectIcon(project.type),
+//      subtitle: Text(project.lastModified.toIso8601String()),
       trailing: Row(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.end,
@@ -50,12 +80,37 @@ class ProjectsScreenState extends State<ProjectsScreen> {
                 progressColor: Colors.green[600],
               ),
             PopupMenuButton(itemBuilder: (c) => [
-              PopupMenuItem(value: 1, child: Text("Delete"),),
-              PopupMenuItem(value: 2, child: Text("Player View"),),
-              PopupMenuItem(value: 3, child: Text("List View"),)
+              PopupMenuItem(value: 1, child: Text("Player View"),),
+              PopupMenuItem(value: 2, child: Text("List View"),),
+              PopupMenuItem(value: 3, child: Text(project.isArchived ? "Unarchive": "Archive"),),
+              PopupMenuItem(value: 4, child: Text("Delete"),),
             ],onSelected: (v) async {
               switch (v){
                 case 1:
+                  launchProject(context, project);
+                  break;
+                case 2:
+                  launchProjectListView(context, project);
+                  break;
+                case 3:
+                  final db = ProjectsDB();
+                  DateTime mtime = await db.setIsArchived(project.uuid, !project.isArchived);
+                  db.close();
+                  setState(() {
+                    project.isArchived = !project.isArchived;
+                    project.lastModified = mtime;
+                  });
+                  break;
+                case 4:
+                  DialogResult dialogRes = await showDialog(context: context, child: AlertDialog(
+                    title: Text("Delete"),
+                    content: Text("Are you sure?"),
+                    actions: <Widget>[
+                      FlatButton(child: Text("Yes"), onPressed: ()=>Navigator.of(context).pop(DialogResult.Yes),),
+                      FlatButton(child: Text("No"), onPressed: ()=>Navigator.of(context).pop(DialogResult.No))],
+                  ));
+                  if (dialogRes == DialogResult.No)
+                    return;
                   final db = ProjectsDB();
                   await db.removeProject(project.uuid);
                   db.close();
@@ -63,16 +118,10 @@ class ProjectsScreenState extends State<ProjectsScreen> {
                     _projects.remove(project);
                   });
                   break;
-                case 2:
-                  launchProject(context, project);
-                  break;
-                case 3:
-                  launchProjectListView(context, project);
-                  break;
               }
             }, )
           ]),
-      onTap: () async => launchProject(context, project),
+      onTap: () async => launchProjectListView(context, project),
     );
   }
 
@@ -118,7 +167,12 @@ launchProjectListView(BuildContext context, ProjectConfiguration project) async 
       );
     final spotifyClient = SpotifyContainer.of(context).client;
     final myDetails = SpotifyContainer.of(context).myDetails;
-    var projectsWidgets = (_projects.map<Widget>((p) => _buildRow(p))).toList();
+    var projectsWidgets = ((_projects.where((project) => !project.isArchived).toList()..sort(
+            (a, b)=>-a.lastModified.compareTo(b.lastModified))).map<Widget>(
+            (p) => _buildRow(context, p))).toList();
+    var archivedProjects = ((_projects.where((project) => project.isArchived).toList()..sort(
+            (a, b)=>-a.lastModified.compareTo(b.lastModified))).map<Widget>(
+            (p) => _buildRow(context, p))).toList();
     projectsWidgets.insert(
       0,
       ListTile(
@@ -138,6 +192,10 @@ launchProjectListView(BuildContext context, ProjectConfiguration project) async 
         },
       ),
     );
+    projectsWidgets.add(ExpansionTile(
+      title: Text("Archived"),
+      children: archivedProjects,
+    ));
     return ListView(
       padding: const EdgeInsets.only(top: 8),
       children: ListTile.divideTiles(context: context, tiles: projectsWidgets)
