@@ -83,9 +83,10 @@ class _CreateProjectState extends State<CreateProject> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomPadding:false,
+      appBar: AppBar(backgroundColor: Theme.of(context).canvasColor,
+            elevation: 0),
       body: Column(children: <Widget>[
         Padding(padding: EdgeInsets.only(bottom: 20),),
-        topBar(context),
         Expanded(
           child: pageView(context),
         )
