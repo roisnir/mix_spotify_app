@@ -283,6 +283,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget buildLogo()=>Padding(
     padding: EdgeInsets.only(top: 60, bottom: 40),
-    child: Center(child: Image.asset("assets/mix_app5.png", height: 128,),),
+    child: Center(child: Image.asset("assets/mix_app7.png", height: 128,),),
   );
 }
