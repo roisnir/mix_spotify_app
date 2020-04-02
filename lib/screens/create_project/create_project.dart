@@ -73,8 +73,12 @@ class _CreateProjectState extends State<CreateProject> {
         return;
       }
     }
-    if (controller.page.isInt())
-      prevPage = controller.page.toInt();
+    if (controller.page.isInt()) {
+      setState(() {
+        prevPage = controller.page.toInt();
+      });
+
+    }
   }
 
   int get curPage => controller.hasClients ? controller.page.round() : null;
