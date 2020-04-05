@@ -3,19 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:spotify/spotify_io.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'screens/home_nav.dart';
+import 'package:spotify_manager/creds.dart';
 
-const clientId = "1f18caf5f1be400dbea59fc8e61f4502";
-const clientSecret = "bf7619c5e1c84cc89adc149f286b8d9f";
 final authorizationUrl = Uri.parse("https://accounts.spotify.com/authorize");
 const scopes = [
   'user-read-email',
   'user-read-private',
   'playlist-modify-public',
-  'user-library-modify',
   'playlist-read-private',
   'playlist-modify-private',
-  'user-library-read',
-  'user-top-read'
+  'user-library-read'
 ];
 final tokenUrl = Uri.parse("https://accounts.spotify.com/api/token");
 const redirectUrl = "rois://spotifymanager";

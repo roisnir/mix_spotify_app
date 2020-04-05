@@ -31,6 +31,10 @@
 /build/
 pubspec.lock
 
+# creds
+android/key.properties
+lib/creds.dart
+
 # Web related
 lib/generated_plugin_registrant.dart
 web/

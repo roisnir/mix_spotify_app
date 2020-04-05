@@ -156,7 +156,7 @@ class _ProjectListViewState extends State<ProjectListView> {
                       if (nowPlaying == i)
                         await pause();
                       else
-                        await play(tracks.sublist(1).map((t) => t.previewUrl), i);
+                        await play(tracks.sublist(i).map((t) => t.previewUrl), i);
                     }, trailing: nowPlaying == i ? Icon(Icons.pause):null,),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 15),
