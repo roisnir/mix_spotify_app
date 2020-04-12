@@ -105,39 +105,34 @@ class WelcomeScreenState extends State<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final widgets = <Widget>[
-      Container(
-        color: Theme.of(context).backgroundColor,
-        child: Center(
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-              Text("Welcome to Spotify Manager!\r\nWe'll start right away!", textAlign: TextAlign.center, style: Theme.of(context).textTheme.subtitle1,),
-                  Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: SizedBox(width: 70, height: 70,child: CircularProgressIndicator()),
-              ),
-            ])),
-      ),
-      WebView(
-        key: webViewKey,
-        initialUrl: WelcomeScreen.authUrl,
-        javascriptMode: JavascriptMode.unrestricted,
-        navigationDelegate: (navReq) {
-          if (!navReq.url.startsWith(redirectUrl))
-            return NavigationDecision.navigate;
-          setState(() {
-            shouldShowWebView = false;
-          });
-          handleRedirect(navReq.url);
+    final widget = shouldShowWebView ? WebView(
+      key: webViewKey,
+      initialUrl: WelcomeScreen.authUrl,
+      javascriptMode: JavascriptMode.unrestricted,
+      navigationDelegate: (navReq) {
+        if (!navReq.url.startsWith(redirectUrl))
           return NavigationDecision.navigate;
-        },
-      )
-    ];
-    if (!shouldShowWebView)
-      widgets.insert(0, widgets.removeLast());
+        setState(() {
+          shouldShowWebView = false;
+        });
+        handleRedirect(navReq.url);
+        return NavigationDecision.navigate;
+      },
+    ) :Container(
+      color: Theme.of(context).backgroundColor,
+      child: Center(
+          child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text("Welcome to Spotify Manager!\r\nWe'll start right away!", textAlign: TextAlign.center, style: Theme.of(context).textTheme.subtitle1,),
+                Padding(
+                  padding: const EdgeInsets.all(32.0),
+                  child: SizedBox(width: 70, height: 70,child: CircularProgressIndicator()),
+                ),
+              ])),
+    );
     return Scaffold(
-      body: Stack(children: widgets,)
+      body: widget
     );
   }
 

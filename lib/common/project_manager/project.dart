@@ -16,6 +16,7 @@ class Project {
 
   Project(this.name, this.totalTracks, this._getTracks, this.playlists, [this.curIndex = 0, this.uuid]){
     uuid = uuid != null ? uuid : new Uuid().v4();
+    print("created project");
   }
 
   Future<ProjectConfiguration> getConfig([List<String> trackIds]) async {
@@ -26,15 +27,17 @@ class Project {
 
   static Future<Project> fromConfiguration(
       ProjectConfiguration config, SpotifyApi spotify) async {
+    final playlists = await Future.wait<ProjectPlaylist>(
+        config.playlistIds.map<Future<ProjectPlaylist>>((playlistId) async =>
+            ProjectPlaylist.fromPlaylist(
+                await spotify.playlists.get(playlistId), spotify))
+    );
+    final s = () => spotify.tracks.tracksStream(config.trackIds);
     return Project(
         config.name,
         config.trackIds.length,
-        () => spotify.tracks.tracksStream(config.trackIds),
-        await Future.wait<ProjectPlaylist>(
-          config.playlistIds.map<Future<ProjectPlaylist>>((playlistId) async =>
-              ProjectPlaylist.fromPlaylist(
-                  await spotify.playlists.get(playlistId), spotify))
-        ),
+        s,
+        playlists,
         config.curIndex,
         config.uuid
     );
@@ -49,4 +52,5 @@ Stream<List<T>> streamRevisions<T>(Stream<T> trackStream, [batchSize=10]) async*
     if (tracks.length % batchSize == 0)
       yield tracks;
   }
+  yield tracks;
 }

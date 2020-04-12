@@ -47,6 +47,7 @@ class _ProjectListViewState extends State<ProjectListView> {
       projectFuture.then((project) {
         setState(() {
           scrollController = ScrollController();
+          print("creating revisions stream");
           tracksRevisions = streamRevisions(project.tracks, 50);
           this.project = project;
         });

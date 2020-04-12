@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return buildRowCard(
         icon: Icon(
           Icons.show_chart,
-          size: 96,
+          size: 88,
           color: Colors.lightBlueAccent,
         ),
         child: FutureBuilder<List<ProjectConfiguration>>(
@@ -102,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return buildRowCard(
         icon: Icon(
           Icons.library_music,
-          size: 96,
+          size: 88,
           color: Colors.pinkAccent,
         ),
         child: FutureBuilder<List<TrackSaved>>(
@@ -128,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: <Widget>[
                 Text("Tracks Liked This Month: $addedThisMonth", style: theme.textTheme.subtitle1,),
                 Text("Unsorted Liked Songs: ${unsortedTracks.length}", style: theme.textTheme.subtitle1,),
-                Text("$msg", style: theme.textTheme.subtitle1,),
+                Text("$msg", style: theme.textTheme.subtitle1, overflow: TextOverflow.fade,),
               ],
             );
           }
@@ -176,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: createProject,
         icon: Icon(
           Icons.add_box,
-          size: 96,
+          size: 88,
           color: theme.primaryColor,
         ),
         child: Column(
@@ -205,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
           },
             icon: Icon(
               Icons.arrow_forward,
-              size: 96,
+              size: 88,
               color: Colors.deepPurple,
             ),
             child: Column(
@@ -236,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 30),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Container(
                 height: height,
                 child: Row(
@@ -245,10 +245,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
                     Padding(
-                      padding: const EdgeInsets.only(right: 20),
-                      child: SizedBox(child: icon, width: 96,),
+                      padding: const EdgeInsets.only(right: 10),
+                      child: SizedBox(child: icon, width: 88,),
                     ),
-                    child
+                    Expanded(child: child)
                   ],
                 ),
               ),
