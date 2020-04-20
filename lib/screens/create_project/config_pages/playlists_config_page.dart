@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:spotify/spotify_io.dart';
+import 'package:spotify/spotify.dart';
 import 'package:spotify_manager/main.dart';
 import '../../new_playlist_dialog.dart';
 import '../form_fields.dart';

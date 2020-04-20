@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:spotify/spotify_io.dart' as spotify;
+import 'package:spotify/spotify.dart' as spotify;
 
 class SpotifyImage extends StatelessWidget {
   final double height;

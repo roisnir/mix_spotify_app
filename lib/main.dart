@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:spotify/spotify_io.dart';
+import 'package:spotify/spotify.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'screens/home_nav.dart';
 import 'package:spotify_manager/creds.dart';

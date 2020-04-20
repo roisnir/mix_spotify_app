@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:spotify/spotify_io.dart';
+import 'package:spotify/spotify.dart';
 import 'package:spotify_manager/common/project_manager/create_project.dart';
 import 'package:spotify_manager/main.dart';
 import 'create_project.dart';

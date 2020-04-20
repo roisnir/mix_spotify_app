@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:spotify/spotify_io.dart';
+import 'package:spotify/spotify.dart';
 
 class NewPlaylistDialog extends StatefulWidget {
   final SpotifyApi client;

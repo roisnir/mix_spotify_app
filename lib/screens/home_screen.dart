@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:spotify/spotify_io.dart' hide Image;
+import 'package:spotify/spotify.dart' hide Image;
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/project_manager/projects_db.dart';
 import 'package:spotify_manager/common/project_manager/projects_endpoint.dart';
