@@ -1,5 +1,5 @@
 # Mix: Create and manage Spotify playlists
-![feature graphic](./graphics/feature_graphic.jpg =512x250)
+![feature graphic](https://github.com/roisnir/playlisting_app/raw/master/graphics/feature_graphic.jpg =512x250)
 
 Use Mix to create playlists as you listen to music and keep updating them when you add songs to your library.
 
