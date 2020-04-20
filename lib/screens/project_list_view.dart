@@ -47,6 +47,7 @@ class _ProjectListViewState extends State<ProjectListView> {
       projectFuture.then((project) {
         setState(() {
           scrollController = ScrollController();
+          print("creating revisions stream");
           tracksRevisions = streamRevisions(project.tracks, 50);
           this.project = project;
         });
@@ -156,7 +157,7 @@ class _ProjectListViewState extends State<ProjectListView> {
                       if (nowPlaying == i)
                         await pause();
                       else
-                        await play(tracks.sublist(1).map((t) => t.previewUrl), i);
+                        await play(tracks.sublist(i).map((t) => t.previewUrl), i);
                     }, trailing: nowPlaying == i ? Icon(Icons.pause):null,),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 15),

@@ -128,37 +128,21 @@ class PlaylistsSelection extends FormField<List<bool>> {
             ],
           )));
     }
-    return GridView.count(
-      padding: EdgeInsets.all(30),
-      crossAxisCount: 3,
-      childAspectRatio: 0.75,
-      mainAxisSpacing: 20,
-      crossAxisSpacing: 20,
-      children: buttons,
+    return Column(
+      children: <Widget>[
+        state.hasError ? Text(state.errorText, style: TextStyle(fontSize: 12, color: Colors.red),) : Text(""),
+        Expanded(
+          child: GridView.count(
+            padding: EdgeInsets.all(30),
+            crossAxisCount: 3,
+            childAspectRatio: 0.75,
+            mainAxisSpacing: 20,
+            crossAxisSpacing: 20,
+            children: buttons,
+          ),
+        ),
+      ],
     );
 
   }
 }
-
-
-
-
-// FormFieldTemplate
-//
-//class PlaylistsSelection extends FormField<List<bool>> {
-//
-//  PlaylistsSelection({ThemeData theme,
-//                       List<Playlist> playlists,
-//                       Function(List<bool>) onChanged,
-//                       FormFieldSetter<List<bool>> onSaved,
-//                       FormFieldValidator<List<bool>> validator,
-//                       List<bool> initialValue,
-//                       bool autoValidate=false}):
-//        super(onSaved:onSaved, validator:validator, initialValue: initialValue,
-//          autovalidate: autoValidate,
-//          builder:(FormFieldState<List<bool>> state) => build(state, theme, playlists, onChanged));
-//
-//  static Widget build(FormFieldState<List<bool>> state, ThemeData theme, List<Playlist> templates, Function(List<bool>) onChanged){
-//
-//  }
-//}

@@ -9,7 +9,7 @@
 
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="spotify_manager"
+        android:label="Mix"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

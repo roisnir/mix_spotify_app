@@ -53,25 +53,30 @@ class _SelectTemplateState extends State<SelectTemplate> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Padding(padding: EdgeInsets.only(top: 50),),
-        Text("Choose Template", style: theme.textTheme.headline4),
-        Padding(
-          padding: const EdgeInsets.only(top: 4, bottom: 20),
-          child: Text(
-            "What kind of project would you like to start?",
-            style: theme.textTheme.caption,
+    return Scaffold(
+      appBar: AppBar(backgroundColor: Theme.of(context).canvasColor,
+    elevation: 0),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Padding(
+            padding: EdgeInsets.only(left: 10),
+              child: Text("Choose Template", style: theme.textTheme.headline4)),
+          Padding(
+            padding: const EdgeInsets.only(top: 4, bottom: 20, left: 10),
+            child: Text(
+              "What kind of project would you like to start?",
+              style: theme.textTheme.caption,
+            ),
           ),
-        ),
-        Expanded(
-          child: FutureBuilder(
-            future: playlistsFuture,
-            builder: (context, snapshot)=>snapshot.hasData?buildTemplates(context, snapshot.data, theme):Center(child:CircularProgressIndicator()),
+          Expanded(
+            child: FutureBuilder(
+              future: playlistsFuture,
+              builder: (context, snapshot)=>snapshot.hasData?buildTemplates(context, snapshot.data, theme):Center(child:CircularProgressIndicator()),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
