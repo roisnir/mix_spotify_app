@@ -1,5 +1,4 @@
 # Mix: Create and manage Spotify playlists
-![feature graphic](https://github.com/roisnir/playlisting_app/raw/master/graphics/feature_graphic.jpg =512x250)
 
 Use Mix to create playlists as you listen to music and keep updating them when you add songs to your library.
 
@@ -14,3 +13,4 @@ Made with flutter and uses spotify api.
 
 [App Store](https://apps.apple.com/app/id1506405161)
 
+<img src="https://github.com/roisnir/playlisting_app/raw/master/graphics/feature_graphic.jpg" width="512" height="250">
