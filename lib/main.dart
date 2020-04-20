@@ -107,6 +107,9 @@ class WelcomeScreenState extends State<WelcomeScreen> {
   Widget build(BuildContext context) {
     final widget = shouldShowWebView ? WebView(
       key: webViewKey,
+//      onWebViewCreated: (ctr){
+//        ctr.clearCache();
+//      },
       initialUrl: WelcomeScreen.authUrl,
       javascriptMode: JavascriptMode.unrestricted,
       navigationDelegate: (navReq) {

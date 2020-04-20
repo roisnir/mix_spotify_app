@@ -4,8 +4,10 @@ import 'package:spotify/spotify.dart' hide Image;
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/project_manager/projects_db.dart';
 import 'package:spotify_manager/common/project_manager/projects_endpoint.dart';
+import 'package:spotify_manager/main.dart';
 import 'package:spotify_manager/screens/create_project/select_template.dart';
 import 'package:spotify_manager/screens/project_list_view.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
   final SpotifyApi api;
@@ -59,7 +61,22 @@ class _HomeScreenState extends State<HomeScreen> {
     bodyColumn.children.add(buildCreateProject(theme));
     bodyColumn.children.add(buildContinueProject(context));
     bodyColumn.children.add(buildLogo());
-    return SingleChildScrollView(child: bodyColumn,);
+    return Stack(children: <Widget>[
+      SingleChildScrollView(child: bodyColumn,),
+      Align(alignment: Alignment.topRight, child: PopupMenuButton(
+        icon: Icon(Icons.settings),
+        itemBuilder: (c)=>[PopupMenuItem(value: 0, child: Row(
+          children: <Widget>[
+            Icon(Icons.exit_to_app),
+            Text("Logout")
+          ],),)],
+        onSelected: (v){
+          CookieManager().clearCookies();
+          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
+            builder: (ctx)=>WelcomeScreen()
+          ), (route) => route.isFirst);
+        },
+      ),)]);
   }
 
   Widget buildTextTile(String text, ThemeData theme) => Padding(

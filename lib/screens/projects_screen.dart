@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:spotify_manager/common/project_manager/model/project.dart';
@@ -56,7 +57,6 @@ class ProjectsScreenState extends State<ProjectsScreen> {
     return ListTile(
       title: Text(project.name),
       leading: projectIcon(project.type),
-//      subtitle: Text(project.lastModified.toIso8601String()),
       trailing: Row(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.end,
@@ -66,8 +66,8 @@ class ProjectsScreenState extends State<ProjectsScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 3),
                 lineHeight: 15.0,
                 center: Text(
-                    "${(project.curIndex / project.trackIds.length * 100).toStringAsFixed(1)}%", style: Theme.of(context).textTheme.caption.copyWith(fontWeight: FontWeight.bold),),
-                percent: project.curIndex / project.trackIds.length,
+                    "${((project.curIndex + 1) / project.trackIds.length * 100).toStringAsFixed(1)}%", style: Theme.of(context).textTheme.caption.copyWith(fontWeight: FontWeight.bold),),
+                percent: (project.curIndex + 1) / project.trackIds.length,
                 backgroundColor: Colors.green[200],
                 progressColor: Colors.green[600],
               ),
@@ -85,36 +85,44 @@ class ProjectsScreenState extends State<ProjectsScreen> {
                   launchProjectListView(context, project);
                   break;
                 case 3:
-                  final db = ProjectsDB();
-                  DateTime mtime = await db.setIsArchived(project.uuid, !project.isArchived);
-                  db.close();
-                  setState(() {
-                    project.isArchived = !project.isArchived;
-                    project.lastModified = mtime;
-                  });
+                  await archiveProject(project);
                   break;
                 case 4:
-                  DialogResult dialogRes = await showDialog(context: context, child: AlertDialog(
-                    title: Text("Delete"),
-                    content: Text("Are you sure?"),
-                    actions: <Widget>[
-                      FlatButton(child: Text("Yes"), onPressed: ()=>Navigator.of(context).pop(DialogResult.Yes),),
-                      FlatButton(child: Text("No"), onPressed: ()=>Navigator.of(context).pop(DialogResult.No))],
-                  ));
-                  if (dialogRes == DialogResult.No)
-                    return;
-                  final db = ProjectsDB();
-                  await db.removeProject(project.uuid);
-                  db.close();
-                  setState(() {
-                    _projects.remove(project);
-                  });
+                  await deleteProject(context, project);
                   break;
               }
             }, )
           ]),
       onTap: () async => launchProjectListView(context, project),
     );
+  }
+
+  Future deleteProject(BuildContext context, ProjectConfiguration project) async {
+    DialogResult dialogRes = await showDialog(context: context, child: AlertDialog(
+      title: Text("Delete"),
+      content: Text("Are you sure?"),
+      actions: <Widget>[
+        FlatButton(child: Text("Yes"), onPressed: ()=>Navigator.of(context).pop(DialogResult.Yes),),
+        FlatButton(child: Text("No"), onPressed: ()=>Navigator.of(context).pop(DialogResult.No))],
+    ));
+    if (dialogRes == DialogResult.No)
+        return;
+    final db = ProjectsDB();
+    await db.removeProject(project.uuid);
+    db.close();
+    setState(() {
+      _projects.remove(project);
+    });
+  }
+
+  Future archiveProject(ProjectConfiguration project, [ProjectsDB db]) async {
+    db ??= ProjectsDB();
+    DateTime mtime = await db.setIsArchived(project.uuid, !project.isArchived);
+    db.close();
+    setState(() {
+      project.isArchived = !project.isArchived;
+      project.lastModified = mtime;
+    });
   }
 
   launchProject(BuildContext context, ProjectConfiguration project) async {
@@ -131,10 +139,12 @@ class ProjectsScreenState extends State<ProjectsScreen> {
     });
     final db = ProjectsDB();
     await db.updateIndex(project.uuid, index);
+    if (project.curIndex + 1 == project.trackIds.length)
+      await launchProjectDoneDialog(context, project, db);
     db.close();
   }
 
-launchProjectListView(BuildContext context, ProjectConfiguration project) async {
+  launchProjectListView(BuildContext context, ProjectConfiguration project) async {
     int index = await Navigator.of(context)
         .push(MaterialPageRoute(builder: (BuildContext subContext) {
       return ProjectListView(
@@ -148,7 +158,22 @@ launchProjectListView(BuildContext context, ProjectConfiguration project) async 
     });
     final db = ProjectsDB();
     await db.updateIndex(project.uuid, index);
+    if (project.curIndex + 1 == project.trackIds.length)
+      await launchProjectDoneDialog(context, project, db);
     db.close();
+  }
+
+  Future<void> launchProjectDoneDialog(BuildContext context, ProjectConfiguration project, ProjectsDB db) async {
+    DialogResult dialogRes = await showDialog(context: context, child: AlertDialog(
+      title: Text("All Done!"),
+      content: Text("Nice work!\r\nDo you want to archive this project?"),
+      actions: <Widget>[
+        FlatButton(child: Text("Yes"), onPressed: ()=>Navigator.of(context).pop(DialogResult.Yes),),
+        FlatButton(child: Text("No"), onPressed: ()=>Navigator.of(context).pop(DialogResult.No))],
+    ));
+    if (dialogRes == DialogResult.No)
+      return;
+    await archiveProject(project, db);
   }
 
   @override

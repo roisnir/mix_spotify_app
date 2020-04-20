@@ -1,3 +1,4 @@
+import 'package:spotify_manager/common/project_manager/project.dart';
 import 'package:uuid/uuid.dart';
 
 class ProjectConfiguration {

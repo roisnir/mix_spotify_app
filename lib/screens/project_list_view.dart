@@ -119,7 +119,7 @@ class _ProjectListViewState extends State<ProjectListView> {
                   final newCurIndex = await Navigator.of(context).push(
                       MaterialPageRoute(builder: (BuildContext subContext) {
                         return ProjectScreen(
-                          projectConfig: widget.projectConfig,
+                          projectConfig: widget.projectConfig..curIndex = project.curIndex,
                           client: widget.api,
                           me: widget.me,
                           project: project,
