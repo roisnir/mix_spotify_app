@@ -52,6 +52,17 @@ class ProjectsDB {
     print(await (await _db).query(projectsTable));
   }
 
+  Future<void> updateProject(String projectId, {String newName, List<String> newPlaylistIds}) async {
+    final updateValues = <String, dynamic>{};
+    if (newName != null)
+      updateValues['name'] = newName;
+    if (newPlaylistIds != null)
+      updateValues['playlistIds'] = newPlaylistIds.join(';');
+    if (updateValues.length == 0)
+      return;
+    await (await _db).update(projectsTable, updateValues, where: 'uuid = ?', whereArgs: [projectId]);
+  }
+
   Future<void> updateIndex(String projectUuid, int index) async {
     await (await _db).update(projectsTable, {'curIndex': index},
         where: "uuid = ?", whereArgs: [projectUuid]);

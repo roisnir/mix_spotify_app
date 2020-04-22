@@ -8,6 +8,7 @@ import 'package:spotify_manager/common/project_manager/projects_endpoint.dart';
 import 'package:spotify_manager/common/utils.dart';
 import 'package:spotify_manager/main.dart';
 import 'package:spotify_manager/screens/create_project/select_template.dart';
+import 'package:spotify_manager/screens/edit_project.dart';
 import 'package:spotify_manager/screens/project_list_view.dart';
 import 'project_screen.dart';
 
@@ -54,6 +55,15 @@ class ProjectsScreenState extends State<ProjectsScreen> {
     );
   }
 
+  Widget projectMenuItem(int index, String title, IconData icon) =>
+      PopupMenuItem(
+          value: index,
+          child: Row(
+            children: <Widget>[
+              Icon(icon),
+              Padding(padding: EdgeInsets.only(left: 10),),
+              Text(title)],));
+
   Widget _buildRow(BuildContext context, ProjectConfiguration project) {
     return ListTile(
       title: Text(project.name),
@@ -73,26 +83,23 @@ class ProjectsScreenState extends State<ProjectsScreen> {
                 progressColor: Colors.green[600],
               ),
             PopupMenuButton(itemBuilder: (c) => (project.isArchived ? <PopupMenuItem>[] : <PopupMenuItem>[
-              PopupMenuItem(value: 1, child: Text("Player View"),),
-              PopupMenuItem(value: 2, child: Text("List View"),),
+              projectMenuItem(0, "Player View", Icons.subscriptions),
+              projectMenuItem(1, "List View", Icons.queue_music),
+              projectMenuItem(2, "Edit", Icons.edit),
             ]) + <PopupMenuItem>[
-              PopupMenuItem(value: 3, child: Text(project.isArchived ? "Unarchive": "Archive"),),
-              PopupMenuItem(value: 4, child: Text("Delete"),),
-            ],onSelected: (v) async {
-              switch (v){
-                case 1:
-                  launchProject(context, project);
-                  break;
-                case 2:
-                  launchProjectListView(context, project);
-                  break;
-                case 3:
-                  await archiveProject(project);
-                  break;
-                case 4:
-                  await deleteProject(context, project);
-                  break;
-              }
+              projectMenuItem(
+                  3,
+                  project.isArchived ? "Unarchive": "Archive",
+                  project.isArchived ? Icons.unarchive : Icons.archive),
+              projectMenuItem(4, "Delete", Icons.delete),
+            ],onSelected: (v) {
+              <Function()>[
+                ()=>launchProject(context, project),
+                ()=>launchProjectListView(context, project),
+                ()=>launchEditProject(context, project),
+                ()=>archiveProject(project),
+                ()=>deleteProject(context, project)
+              ][v]();
             }, )
           ]),
       onTap: () async {
@@ -157,6 +164,13 @@ class ProjectsScreenState extends State<ProjectsScreen> {
     if (project.curIndex + 1 == project.trackIds.length)
       await launchProjectDoneDialog(context, project, db);
     db.close();
+  }
+
+  launchEditProject(BuildContext context, ProjectConfiguration project) async {
+    final global = SpotifyContainer.of(context);
+    await Navigator.of(context).push(MaterialPageRoute(builder: (c)=>EditProject(
+        global.client, global.myDetails, project)));
+    setState(() {});
   }
 
   launchProjectListView(BuildContext context, ProjectConfiguration project) async {
