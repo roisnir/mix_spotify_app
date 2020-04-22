@@ -30,20 +30,18 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     final api = widget.api;
     final user = widget.user;
-    setState(() {
     _projects = loadProjects(user.id);
     final _allTracksF = api.tracks.me.saved.all().then((value) => value.toList());
     _playlists = userPlaylists(api, user.id);
     _playlists.then(
             (playlists) => _allTracksF.then(
-                    (tracks) {
-                      setState(() {
-                        _allTracks = tracks;
-                      });
-                      return _unsortedTracks = unsortedTracks(
-                        api, user.id, playlists, tracks);
-                    }));
-    });
+                (tracks) {
+              setState(() {
+                _allTracks = tracks;
+              });
+              return _unsortedTracks = unsortedTracks(
+                  api, user.id, playlists, tracks);
+            }));
   }
 
   @override
@@ -74,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
           CookieManager().clearCookies();
           Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
             builder: (ctx)=>WelcomeScreen()
-          ), (route) => route.isFirst);
+          ), (route) => false);
         },
       ),)]);
   }
@@ -214,7 +212,7 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (c, snapshot){
         if (!snapshot.hasData || snapshot.hasError || snapshot.data.length == 0)
           return Container();
-        final project = snapshot.data.reduce(
+        final project = snapshot.data.where((proj) => !proj.isArchived).reduce(
                 (a, b) => a.lastModified.isAfter(b.lastModified) ? a : b);
         return buildRowCard(
           onPressed: (){

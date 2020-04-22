@@ -72,9 +72,10 @@ class ProjectsScreenState extends State<ProjectsScreen> {
                 backgroundColor: Colors.green[200],
                 progressColor: Colors.green[600],
               ),
-            PopupMenuButton(itemBuilder: (c) => [
+            PopupMenuButton(itemBuilder: (c) => (project.isArchived ? <PopupMenuItem>[] : <PopupMenuItem>[
               PopupMenuItem(value: 1, child: Text("Player View"),),
               PopupMenuItem(value: 2, child: Text("List View"),),
+            ]) + <PopupMenuItem>[
               PopupMenuItem(value: 3, child: Text(project.isArchived ? "Unarchive": "Archive"),),
               PopupMenuItem(value: 4, child: Text("Delete"),),
             ],onSelected: (v) async {
@@ -94,7 +95,20 @@ class ProjectsScreenState extends State<ProjectsScreen> {
               }
             }, )
           ]),
-      onTap: () async => launchProjectListView(context, project),
+      onTap: () async {
+        if (!project.isArchived)
+          return launchProjectListView(context, project);
+        DialogResult dialogRes = await showDialog(context: context, child: AlertDialog(
+          title: Text("Unarchive"),
+          content: Text("Do you want to unarchive this project?"),
+          actions: <Widget>[
+            FlatButton(child: Text("Yes"), onPressed: ()=>Navigator.of(context).pop(DialogResult.Yes),),
+            FlatButton(child: Text("No"), onPressed: ()=>Navigator.of(context).pop(DialogResult.No))],
+        ));
+        if (dialogRes == DialogResult.No)
+          return;
+        archiveProject(project);
+      },
     );
   }
 
