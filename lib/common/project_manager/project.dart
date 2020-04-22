@@ -49,8 +49,10 @@ Stream<List<T>> streamRevisions<T>(Stream<T> trackStream, [batchSize=10]) async*
   final tracksIt = StreamIterator(trackStream);
   while (await tracksIt.moveNext()) {
     tracks.add(tracksIt.current);
+    print("${tracks.length} tracks, ${tracks.length % batchSize == 0}");
     if (tracks.length % batchSize == 0)
       yield tracks;
   }
+  print('yielding last');
   yield tracks;
 }

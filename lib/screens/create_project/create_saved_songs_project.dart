@@ -18,8 +18,9 @@ class _CreateSavedSongsProjectState extends State<CreateSavedSongsProject> {
   String projectName;
   List<PlaylistSimple> selectedPlaylists;
 
-  createProject(SpotifyApi api){
+  createProject(String userId, SpotifyApi api){
     return createSavedSongsProject(
+        userId,
         api,
         selectedPlaylists.map<String>((p) => p.id),
         projectName);
@@ -34,6 +35,8 @@ class _CreateSavedSongsProjectState extends State<CreateSavedSongsProject> {
       userDetails: spotifyContainer.myDetails,
       onNameSaved: (name)=>projectName = name,
       onPlaylistsSaved: (playlists) => selectedPlaylists = playlists,
-      onSubmit: ()=>createProject(spotifyContainer.client));
+      onSubmit: ()=>createProject(
+          spotifyContainer.myDetails.id,
+          spotifyContainer.client));
   }
 }

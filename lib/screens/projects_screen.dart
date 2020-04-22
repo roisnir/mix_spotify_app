@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+import 'package:spotify/spotify.dart';
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/project_manager/projects_db.dart';
 import 'package:spotify_manager/common/project_manager/projects_endpoint.dart';
@@ -19,7 +20,7 @@ class ProjectsScreenState extends State<ProjectsScreen> {
   @override
   void initState() {
     super.initState();
-    loadProjects().then((projects)=>setState(() {
+    loadProjects(widget.user.id).then((projects)=>setState(() {
       _projects = projects;
       isLoading = false;
     }));
@@ -228,6 +229,10 @@ class ProjectsScreenState extends State<ProjectsScreen> {
 }
 
 class ProjectsScreen extends StatefulWidget {
+  final User user;
+
+  ProjectsScreen(this.user);
+
   @override
   ProjectsScreenState createState() => ProjectsScreenState();
 }

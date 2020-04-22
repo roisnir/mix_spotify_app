@@ -4,9 +4,9 @@ import 'package:spotify_manager/common/project_manager/project_playlist.dart';
 import 'package:spotify_manager/common/project_manager/projects_db.dart';
 import 'package:spotify_manager/common/utils.dart';
 
-Future<List<ProjectConfiguration>> loadProjects() async {
+Future<List<ProjectConfiguration>> loadProjects(String userId) async {
   final db = ProjectsDB();
-  final projects = List<ProjectConfiguration>.from(await db.getProjectsConf());
+  final projects = List<ProjectConfiguration>.from(await db.getProjectsConf(userId));
   db.close();
   return projects;
 }

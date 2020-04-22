@@ -21,8 +21,9 @@ class _CreateDiscoverProjectState extends State<CreateDiscoverProject> {
   List<PlaylistSimple> selectedPlaylists;
   SpotifyItems selectedItems;
 
-  createProject(SpotifyApi api) {
+  createProject(String userId, SpotifyApi api) {
     return createDiscoverProject(
+        userId,
         api,
         selectedItems.artists.map((artist) => artist.id).toList(),
         selectedItems.tracks.map((track) => track.id).toList(),
@@ -41,6 +42,8 @@ class _CreateDiscoverProjectState extends State<CreateDiscoverProject> {
         configPages: [SearchConfigPage(onSaved: (value)=>selectedItems = value),],
         onNameSaved: (name)=>projectName = name,
         onPlaylistsSaved: (playlists) => selectedPlaylists = playlists,
-        onSubmit: ()=>createProject(spotifyContainer.client));
+        onSubmit: ()=>createProject(
+            spotifyContainer.myDetails.id,
+            spotifyContainer.client));
   }
 }

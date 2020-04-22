@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final api = widget.api;
     final user = widget.user;
     setState(() {
-    _projects = loadProjects();
+    _projects = loadProjects(user.id);
     final _allTracksF = api.tracks.me.saved.all().then((value) => value.toList());
     _playlists = userPlaylists(api, user.id);
     _playlists.then(
