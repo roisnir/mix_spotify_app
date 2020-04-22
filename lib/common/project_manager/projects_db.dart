@@ -20,7 +20,8 @@ class ProjectsDB {
             'type TEXT,'
             'lastModified TEXT DEFAULT CURRENT_TIMESTAMP,'
             'isArchived INTEGER,'
-            'isActive INTEGER'
+            'isActive INTEGER,'
+            'userId TEXT'
             ')');
         await db.execute('CREATE TABLE $tracksTable('
             'trackId TEXT,'
