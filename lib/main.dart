@@ -56,10 +56,7 @@ class SpotifyContainer extends InheritedWidget {
 }
 
 class WelcomeScreen extends StatefulWidget {
-  static final grant = SpotifyApi.authorizationCodeGrant(SpotifyApiCredentials(clientId, clientSecret));
-  static final authUrl = grant
-      .getAuthorizationUrl(Uri.parse(redirectUrl), scopes: scopes)
-      .toString();
+  final grant = SpotifyApi.authorizationCodeGrant(SpotifyApiCredentials(clientId, clientSecret));
 
   @override
   State<StatefulWidget> createState() => WelcomeScreenState();
@@ -67,11 +64,15 @@ class WelcomeScreen extends StatefulWidget {
 
 class WelcomeScreenState extends State<WelcomeScreen> {
   bool shouldShowWebView = false;
+  String authUrl;
   Key webViewKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
+    authUrl = widget.grant
+        .getAuthorizationUrl(Uri.parse(redirectUrl), scopes: scopes)
+        .toString();
     tryLoginWithRefreshToken().then((value) => setState(
             ()=>shouldShowWebView = !value));
   }
@@ -84,15 +85,11 @@ class WelcomeScreenState extends State<WelcomeScreen> {
   handleRedirect(String uri) async {
     if (uri == null || !uri.startsWith(redirectUrl))
       throw "invalid redirect uri";
-    try {
-      final client = SpotifyApi.fromAuthCodeGrant(WelcomeScreen.grant, uri);
-      // TODO: save refresh token
+    final client = SpotifyApi.fromAuthCodeGrant(widget.grant, uri);
+    // TODO: save refresh token
 
-      final myDetails = await client.users.me();
-      navigateToApp(client, myDetails);
-    }
-    on StateError{
-    }
+    final myDetails = await client.users.me();
+    navigateToApp(client, myDetails);
   }
 
   navigateToApp(SpotifyApi client, User myDetails){
@@ -110,7 +107,7 @@ class WelcomeScreenState extends State<WelcomeScreen> {
 //      onWebViewCreated: (ctr){
 //        ctr.clearCache();
 //      },
-      initialUrl: WelcomeScreen.authUrl,
+      initialUrl: authUrl,
       javascriptMode: JavascriptMode.unrestricted,
       navigationDelegate: (navReq) {
         if (!navReq.url.startsWith(redirectUrl))
