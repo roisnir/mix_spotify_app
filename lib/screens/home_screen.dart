@@ -36,9 +36,10 @@ class _HomeScreenState extends State<HomeScreen> {
     _playlists.then(
             (playlists) => _allTracksF.then(
                 (tracks) {
-              setState(() {
-                _allTracks = tracks;
-              });
+                  if (mounted)
+                    setState(() {
+                      _allTracks = tracks;
+                    });
               return _unsortedTracks = unsortedTracks(
                   api, user.id, playlists, tracks);
             }));
