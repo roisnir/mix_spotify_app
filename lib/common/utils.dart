@@ -60,6 +60,54 @@ class SimpleFutureBuilder<T> extends StatelessWidget {
   }
 }
 
+class DefaultFutureBuilder<T> extends StatelessWidget {
+  final Future<T> future;
+  final Widget Function(BuildContext, AsyncSnapshot<T>) builder;
+  final Widget Function(BuildContext, AsyncSnapshot<T>) loadingBuilder;
+  final Widget Function(BuildContext, AsyncSnapshot<T>) errorBuilder;
+
+  DefaultFutureBuilder({
+    @required this.future,
+    @required this.builder,
+    this.loadingBuilder,
+    this.errorBuilder
+  });
+
+  @override
+  Widget build(BuildContext c) {
+    return FutureBuilder<T>(
+      future: future,
+      builder: (BuildContext context, AsyncSnapshot<T> snapshot) {
+        if (snapshot.hasError)
+          return (errorBuilder ?? defaultErrorBuilder)(context, snapshot);
+        if (snapshot.connectionState != ConnectionState.done)
+          return (loadingBuilder ?? defaultLoadingBuilder)(context, snapshot);
+        return builder(context, snapshot);
+      },
+    );
+  }
+
+  static Widget defaultLoadingBuilder<T>(BuildContext context, AsyncSnapshot<T> snap) => Center(child: CircularProgressIndicator(),);
+
+  static Widget defaultErrorBuilder<T>(BuildContext context, AsyncSnapshot<T> snap) => Center(
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Icon(
+          Icons.error_outline,
+          color: Colors.red,
+          size: 60,
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: Text('Error: ${snap.error}'),
+        )
+      ],
+    ),
+  );
+}
+
 extension PageViewNavigation on PageController {
   void goToPage(int pageIndex,
       {duration: const Duration(milliseconds: 300),
