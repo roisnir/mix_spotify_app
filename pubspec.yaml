@@ -1,7 +1,7 @@
 name: spotify_manager
 description: A new Flutter application. for managing spotify playlists.
 
-version: 1.0.1
+version: 1.0.1+3
 
 environment:
   sdk: ">=2.6.0 <3.0.0"
