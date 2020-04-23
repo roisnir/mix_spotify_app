@@ -1,16 +1,16 @@
-# spotify_manager
+# Mix: Create and manage Spotify playlists
 
-A new Flutter application. for managing spotify playlists.
+Use Mix to create playlists as you listen to music and keep updating them when you add songs to your library.
 
-## Getting Started
+- Sort your liked songs to playlists
+- Get recommendations based on the music you like
+- Know when you have liked songs that are not included in your playlists
 
-This project is a starting point for a Flutter application.
+Made with flutter and uses spotify api.
 
-A few resources to get you started if this is your first Flutter project:
+## Download
+[Google Play](https://play.google.com/store/apps/details?id=com.rois.spotify_manager)
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+[App Store](https://apps.apple.com/app/id1506405161)
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+<img src="https://github.com/roisnir/playlisting_app/raw/master/graphics/feature_graphic.jpg" width="512" height="250">

@@ -1,11 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:spotify/spotify_io.dart' hide Image;
+import 'package:spotify/spotify.dart' hide Image;
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/project_manager/projects_db.dart';
 import 'package:spotify_manager/common/project_manager/projects_endpoint.dart';
+import 'package:spotify_manager/main.dart';
 import 'package:spotify_manager/screens/create_project/select_template.dart';
 import 'package:spotify_manager/screens/project_list_view.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
   final SpotifyApi api;
@@ -28,20 +30,19 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     final api = widget.api;
     final user = widget.user;
-    setState(() {
-    _projects = loadProjects();
+    _projects = loadProjects(user.id);
     final _allTracksF = api.tracks.me.saved.all().then((value) => value.toList());
     _playlists = userPlaylists(api, user.id);
     _playlists.then(
             (playlists) => _allTracksF.then(
-                    (tracks) {
-                      setState(() {
-                        _allTracks = tracks;
-                      });
-                      return _unsortedTracks = unsortedTracks(
-                        api, user.id, playlists, tracks);
-                    }));
-    });
+                (tracks) {
+                  if (mounted)
+                    setState(() {
+                      _allTracks = tracks;
+                    });
+              return _unsortedTracks = unsortedTracks(
+                  api, user.id, playlists, tracks);
+            }));
   }
 
   @override
@@ -59,7 +60,22 @@ class _HomeScreenState extends State<HomeScreen> {
     bodyColumn.children.add(buildCreateProject(theme));
     bodyColumn.children.add(buildContinueProject(context));
     bodyColumn.children.add(buildLogo());
-    return SingleChildScrollView(child: bodyColumn,);
+    return Stack(children: <Widget>[
+      SingleChildScrollView(child: bodyColumn,),
+      Align(alignment: Alignment.topRight, child: PopupMenuButton(
+        icon: Icon(Icons.settings),
+        itemBuilder: (c)=>[PopupMenuItem(value: 0, child: Row(
+          children: <Widget>[
+            Icon(Icons.exit_to_app),
+            Text("Logout")
+          ],),)],
+        onSelected: (v){
+          CookieManager().clearCookies();
+          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
+            builder: (ctx)=>WelcomeScreen()
+          ), (route) => false);
+        },
+      ),)]);
   }
 
   Widget buildTextTile(String text, ThemeData theme) => Padding(
@@ -197,7 +213,7 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (c, snapshot){
         if (!snapshot.hasData || snapshot.hasError || snapshot.data.length == 0)
           return Container();
-        final project = snapshot.data.reduce(
+        final project = snapshot.data.where((proj) => !proj.isArchived).reduce(
                 (a, b) => a.lastModified.isAfter(b.lastModified) ? a : b);
         return buildRowCard(
           onPressed: (){

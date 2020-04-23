@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:spotify/spotify_io.dart';
+import 'package:spotify/spotify.dart';
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/project_manager/project_playlist.dart';
 import 'package:uuid/uuid.dart';
@@ -52,5 +52,6 @@ Stream<List<T>> streamRevisions<T>(Stream<T> trackStream, [batchSize=10]) async*
     if (tracks.length % batchSize == 0)
       yield tracks;
   }
+  print('yielding last');
   yield tracks;
 }

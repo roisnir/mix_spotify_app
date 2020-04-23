@@ -1,3 +1,7 @@
+# Credetials
+android/key.properties
+lib/creds.dart
+
 # Miscellaneous
 *.class
 *.log

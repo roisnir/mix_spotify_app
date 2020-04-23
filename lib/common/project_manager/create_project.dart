@@ -1,21 +1,21 @@
-import 'package:spotify/spotify_io.dart';
+import 'package:spotify/spotify.dart';
 import 'package:spotify_manager/common/project_manager/project_playlist.dart';
 import 'package:spotify_manager/common/project_manager/projects_db.dart';
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/utils.dart';
 
-Future<ProjectConfiguration> createSavedSongsProject(SpotifyApi client,
+Future<ProjectConfiguration> createSavedSongsProject(String userId, SpotifyApi client,
     Iterable<String> playlistIds, String projectName) async {
   final tracksIds = (await client.tracks.me.saved.all())
       .map((t) => t.track.id)
       .toList();
   final project = ProjectConfiguration.init(
       projectName, tracksIds, playlistIds.toList(), "SavedSongs");
-  await ProjectsDB().insertProject(project);
+  await ProjectsDB().insertProject(userId, project);
   return project;
 }
 
-Future<ProjectConfiguration> createMaintainProject(SpotifyApi api,
+Future<ProjectConfiguration> createMaintainProject(String userId, SpotifyApi api,
     List<PlaylistSimple> allPlaylists,
     Iterable<PlaylistSimple> selectedPlaylists, String projectName) async {
   final playlists = await Future.wait(
@@ -27,12 +27,12 @@ Future<ProjectConfiguration> createMaintainProject(SpotifyApi api,
       .toList();
   final project = ProjectConfiguration.init(projectName, tracksIds,
       selectedPlaylists.map((playlist) => playlist.id).toList(), "Maintain");
-  await ProjectsDB().insertProject(project);
+  await ProjectsDB().insertProject(userId, project);
   return project;
 }
 
 
-Future<ProjectConfiguration> createDiscoverProject(SpotifyApi api,
+Future<ProjectConfiguration> createDiscoverProject(String userId, SpotifyApi api,
     List<String> seedArtists, List<String> seedTracks,
     Iterable<PlaylistSimple> selectedPlaylists, String projectName,
     [int limit = 100]) async {
@@ -42,12 +42,12 @@ Future<ProjectConfiguration> createDiscoverProject(SpotifyApi api,
       limit: limit).then((recommendations) =>
       recommendations.tracks.map((track) => track.id).toList(growable: false));
   final project = ProjectConfiguration.init(projectName, trackIds, selectedPlaylists.map((playlist) => playlist.id).toList(), "Discover");
-  await ProjectsDB().insertProject(project);
+  await ProjectsDB().insertProject(userId, project);
   return project;
 }
 
 
-Future<ProjectConfiguration> createExtendProject(SpotifyApi api,
+Future<ProjectConfiguration> createExtendProject(String userId, SpotifyApi api,
     List<PlaylistSimple> allPlaylists,
     Iterable<PlaylistSimple> selectedPlaylists, String projectName) async {
   // TODO: implement extend

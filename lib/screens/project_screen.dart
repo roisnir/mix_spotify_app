@@ -3,7 +3,7 @@ import 'package:audioplayer/audioplayer.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
-import 'package:spotify/spotify_io.dart' hide Image;
+import 'package:spotify/spotify.dart' hide Image;
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/project_manager/project.dart';
 import 'package:spotify_manager/common/project_manager/projects_db.dart';
@@ -121,7 +121,7 @@ class ProjectScreenState extends State<ProjectScreen> {
           final newCurIndex = await Navigator.of(context).push(
               MaterialPageRoute(builder: (BuildContext subContext) {
                 return ProjectListView(
-                  projectConfig: widget.projectConfig,
+                  projectConfig: widget.projectConfig..curIndex = project.curIndex,
                   api: widget.client,
                   me: widget.me,
                   project: project,
@@ -260,7 +260,6 @@ class ProjectScreenState extends State<ProjectScreen> {
                     velocity: 40.0,
                     pauseAfterRound: Duration(milliseconds: 1500),
                   ),
-//              child: Text(track.name, style: Theme.of(context).textTheme.headline, overflow: TextOverflow.fade, softWrap: false,),
                 )
                     : Text(
                   track.name,
@@ -299,8 +298,8 @@ class ProjectScreenState extends State<ProjectScreen> {
     padding: EdgeInsets.symmetric(horizontal: 20),
     lineHeight: 30.0,
     center: Text(
-        "${(project.curIndex / project.totalTracks * 100).toStringAsFixed(1)}%"),
-    percent: project.curIndex / project.totalTracks,
+        "${project.curIndex + 1} / ${project.totalTracks}"),
+    percent: (project.curIndex + 1) / project.totalTracks,
     backgroundColor: Colors.green[200],
     progressColor: Colors.green[600],
   );

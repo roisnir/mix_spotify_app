@@ -11,10 +11,13 @@ class HomeNav extends StatefulWidget {
 
 class HomeNavState extends State<HomeNav> {
   int _selectedIndex = 0;
-  List<Widget> _screens(BuildContext context) => <Widget>[
-    HomeScreen(SpotifyContainer.of(context).client, SpotifyContainer.of(context).myDetails),
-    ProjectsScreen()
+  List<Widget> _screens(BuildContext context) {
+    final global = SpotifyContainer.of(context);
+    return <Widget>[
+    HomeScreen(global.client, global.myDetails),
+    ProjectsScreen(global.myDetails)
   ];
+  }
 
 
   static const _navItems = [

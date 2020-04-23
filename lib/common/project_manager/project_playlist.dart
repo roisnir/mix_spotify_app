@@ -1,4 +1,4 @@
-import 'package:spotify/spotify_io.dart';
+import 'package:spotify/spotify.dart';
 
 class ProjectPlaylist {
   List<String> trackIds;

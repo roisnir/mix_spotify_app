@@ -3,7 +3,7 @@ import 'dart:collection';
 import 'package:audioplayer/audioplayer.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:spotify/spotify_io.dart' hide Image;
+import 'package:spotify/spotify.dart' hide Image;
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/project_manager/project.dart';
 import 'package:spotify_manager/common/project_manager/projects_db.dart';
@@ -119,7 +119,7 @@ class _ProjectListViewState extends State<ProjectListView> {
                   final newCurIndex = await Navigator.of(context).push(
                       MaterialPageRoute(builder: (BuildContext subContext) {
                         return ProjectScreen(
-                          projectConfig: widget.projectConfig,
+                          projectConfig: widget.projectConfig..curIndex = project.curIndex,
                           client: widget.api,
                           me: widget.me,
                           project: project,

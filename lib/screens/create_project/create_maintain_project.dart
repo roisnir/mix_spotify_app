@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:spotify/spotify_io.dart';
+import 'package:spotify/spotify.dart';
 import 'package:spotify_manager/common/project_manager/create_project.dart';
 import 'package:spotify_manager/main.dart';
 import 'create_project.dart';
@@ -18,8 +18,9 @@ class _CreateMaintainProjectState extends State<CreateMaintainProject> {
   String projectName;
   List<PlaylistSimple> selectedPlaylists;
 
-  createProject(SpotifyApi api) {
+  createProject(String userId, SpotifyApi api) {
     return createMaintainProject(
+        userId,
         api,
         widget.playlists,
         selectedPlaylists,
@@ -35,6 +36,8 @@ class _CreateMaintainProjectState extends State<CreateMaintainProject> {
       userDetails: spotifyContainer.myDetails,
       onNameSaved: (name)=>projectName = name,
       onPlaylistsSaved: (playlists) => selectedPlaylists = playlists,
-      onSubmit: ()=>createProject(spotifyContainer.client));
+      onSubmit: ()=>createProject(
+          spotifyContainer.myDetails.id,
+          spotifyContainer.client));
   }
 }
