@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:spotify_manager/widgets/draggable_scroll_bar.dart';
 
@@ -17,7 +18,7 @@ class FloatingBarListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DraggableScrollbar.arrows(
+    return CupertinoScrollbar(
       controller: controller,
       child: CustomScrollView(
         controller: controller,

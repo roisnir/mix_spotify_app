@@ -26,6 +26,7 @@ class ProjectConfiguration {
     name = json["name"];
     uuid = json["uuid"];
     _curIndex = json["curIndex"];
+    _curIndex ??= 0;
     trackIds = _trackIds ?? json['trackIds'].map<String>((tId)=> tId as String).toList();
     playlistIds = json["playlistIds"].split(";").toList();
     type = json["type"];
