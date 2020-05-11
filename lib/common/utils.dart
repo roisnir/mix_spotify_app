@@ -192,3 +192,11 @@ class _ProgressIndicatorPopupState extends State<ProgressIndicatorPopup> {
     );
   }
 }
+
+num sum(Iterable<num> numbers){
+  return numbers.reduce((n1, n2) => n1 + n2);
+}
+
+num avg(Iterable<num> numbers){
+  return sum(numbers) / numbers.length;
+}
