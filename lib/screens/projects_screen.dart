@@ -166,11 +166,10 @@ class ProjectsScreenState extends State<ProjectsScreen> {
     db.close();
   }
 
-  launchEditProject(BuildContext context, ProjectConfiguration project) async {
+  launchEditProject(BuildContext context, ProjectConfiguration project) {
     final global = SpotifyContainer.of(context);
-    await Navigator.of(context).push(MaterialPageRoute(builder: (c)=>EditProject(
-        global.client, global.myDetails, project)));
-    setState(() {});
+    Navigator.of(context).push(MaterialPageRoute(builder: (c)=>EditProject(
+        global.client, global.myDetails, project,)));
   }
 
   launchProjectListView(BuildContext context, ProjectConfiguration project) async {
