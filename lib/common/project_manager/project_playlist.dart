@@ -1,37 +1,76 @@
 import 'package:spotify/spotify.dart';
+import 'package:spotify_manager/common/project_manager/track_analysis.dart';
 import 'package:spotify_manager/common/utils.dart';
 import 'dart:math' as math;
 
 class ProjectPlaylist {
   List<Track> tracks;
   Playlist playlist;
+  SpotifyApi api;
+  Future<AudioFeature> _audioFeature;
+  Future<AudioFeature> get audioFeature{
+    if (_audioFeature == null){
+      _audioFeature = avgAudioFutures(tracks, api);
+    }
+    return _audioFeature;
+  }
 
 
-  ProjectPlaylist(this.playlist, this.tracks);
-
+  ProjectPlaylist(this.playlist, this.tracks, this.api);
   get name => playlist.name;
   get id => playlist.id;
+
+  Future<num> fitScore(AudioFeature trackAF) async {
+    if (audioFeature == null || tracks.length == 0){
+       // TODO: maybe throw an errors
+      return null;
+    }
+    final af = await audioFeature.catchError((e){
+      return null;
+    });
+    num distance = 0;
+//    distance += af.mode - trackAF.mode;
+    distance += (af.acousticness - trackAF.acousticness).abs();
+    distance += (af.danceability - trackAF.danceability).abs();
+    distance += (af.energy - trackAF.energy).abs();
+    distance += (af.instrumentalness - trackAF.instrumentalness).abs();
+//    distance += af.loudness;
+//    distance += af.tempo - trackAF.tempo;
+    distance += (af.valence - trackAF.valence).abs();
+    return distance;
+  }
 
   static Future<ProjectPlaylist> fromPlaylist(Playlist playlist, SpotifyApi api) async {
     final trackIds = (await Pages<Track>.fromPaging(api,
         playlist.tracks, (json) => Track.fromJson(json['track'])).all())
         .toList();
-    return ProjectPlaylist(playlist, trackIds);
+    return ProjectPlaylist(playlist, trackIds, api);
   }
 
   static Future<ProjectPlaylist> fromSimplePlaylist(PlaylistSimple playlist, SpotifyApi api) async {
     final trackIds = (await api.playlists.getTracksByPlaylistId(playlist.id).all()).toList();
-    return ProjectPlaylist(await api.playlists.get(playlist.id), trackIds);
+    return ProjectPlaylist(await api.playlists.get(playlist.id), trackIds, api);
   }
 
   static Future<AudioFeature> avgAudioFutures(Iterable<Track> tracks, SpotifyApi api) async {
+    tracks = tracks.where((track) => track.id != null);
     final audioFeatures = AudioFeature();
-    if (tracks.length == 0){
-      // TODO: set all to default and return
+    if (tracks.length == 0) {
+      return null;
     }
-    final tracksAudioFeatures = await Future.wait(tracks.map((track) => api.audioFeatures.get(track.id)));
-    audioFeatures.mode = avg(tracksAudioFeatures.map((e) => e.mode));
-    // TODO: set more features
+    final tracksAudioFeatures = await Future.wait(
+        tracks.where((track) => track.id != null).map((track) {
+          return api.audioFeatures.get(track.id);
+        }));
+//      audioFeatures.mode = avg(tracksAudioFeatures.map((af) => af.mode));
+    audioFeatures.acousticness = avg(tracksAudioFeatures.map((af) => af.acousticness));
+    audioFeatures.danceability = avg(tracksAudioFeatures.map((af) => af.danceability));
+    audioFeatures.energy = avg(tracksAudioFeatures.map((af) => af.energy));
+    audioFeatures.instrumentalness = avg(tracksAudioFeatures.map((af) => af.instrumentalness));
+    audioFeatures.loudness = avg(tracksAudioFeatures.map((af) => af.loudness));
+    audioFeatures.tempo = avg(tracksAudioFeatures.map((af) => af.tempo));
+    audioFeatures.valence = avg(tracksAudioFeatures.map((af) => af.valence));
+    return audioFeatures;
   }
 
   Future<void> addTrack(SpotifyApi api, Track track) async {

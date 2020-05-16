@@ -1,12 +1,15 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:math';
 import 'package:audioplayer/audioplayer.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:spotify/spotify.dart' hide Image;
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/project_manager/project.dart';
+import 'package:spotify_manager/common/project_manager/track_analysis.dart';
 import 'package:spotify_manager/common/project_manager/projects_db.dart';
+import 'package:spotify_manager/common/project_manager/track_analysis_cache.dart';
 import 'package:spotify_manager/screens/project_screen.dart';
 import 'package:spotify_manager/widgets/floating_bar_list_view.dart';
 import 'package:spotify_manager/widgets/search.dart';
@@ -31,6 +34,7 @@ class _ProjectListViewState extends State<ProjectListView> {
   Future<Project> projectFuture;
   Project project;
   Stream<List<Track>> tracksRevisions;
+  TrackAnalysisCache trackAnalysisCache;
   ScrollController scrollController;
   AudioPlayer player = new AudioPlayer();
   Queue<String> upNext;
@@ -48,6 +52,7 @@ class _ProjectListViewState extends State<ProjectListView> {
         setState(() {
           scrollController = ScrollController();
           print("creating revisions stream");
+          trackAnalysisCache = TrackAnalysisCache(project.playlists, widget.api, onUpdate: ()=>setState((){}));
           tracksRevisions = streamRevisions(project.tracks, 50);
           this.project = project;
         });
@@ -101,11 +106,13 @@ class _ProjectListViewState extends State<ProjectListView> {
           stream: tracksRevisions,
           builder: (context, snapshot) {
             if(snapshot.hasError)
-              return Column(children: <Widget>[
-                Padding(padding: EdgeInsets.only(bottom: 10), child: Icon(Icons.error),),
-                Text("An error occured, try again later"),
-                Text(snapshot.error),
-              ],);
+              return Center(
+                child: Column(children: <Widget>[
+                  Padding(padding: EdgeInsets.only(bottom: 10), child: Icon(Icons.error),),
+                  Text("An error occured, try again later"),
+                  Text(snapshot.error.toString()),
+                ],),
+              );
             if (!snapshot.hasData)
               return Center(child: CircularProgressIndicator());
             final tracks = snapshot.data;
@@ -150,28 +157,44 @@ class _ProjectListViewState extends State<ProjectListView> {
                 if (i == tracks.length)
                   return i == widget.projectConfig.trackIds.length ? Container():
                     Center(child: CircularProgressIndicator());
+                final track = tracks[i];
+                final analysis = trackAnalysisCache[track];
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    TrackTile(tracks[i], onTap: (track)async{
-                      if (nowPlaying == i)
-                        await pause();
-                      else
-                        await play(tracks.sublist(i).map((t) => t.previewUrl), i);
-                    }, trailing: nowPlaying == i ? Icon(Icons.pause):null,),
+                    TrackTile(
+                      track,
+                      onTap: (track)async{
+                        if (nowPlaying == i)
+                          await pause();
+                        else
+                          await play(tracks.sublist(i).map((t) => t.previewUrl), i);
+                        },
+                      trailing: nowPlaying == i ? Icon(Icons.pause):null,
+                      genres: (analysis.genres == null || analysis.genres.length == 0) ? null
+                          : analysis.genres
+                          .sublist(0, min(analysis.genres.length, 2))
+                          .join(', ')
+                          .splitMapJoin(' ', onNonMatch: (m)=>m[0].toUpperCase() + m.substring(1)),
+                    ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 15),
                       child: Wrap(
                         spacing: 5,
                         children: project.playlists.map<Widget>((playlist) {
-                          final selected = playlist.contains(tracks[i]);
+                          final selected = playlist.contains(track);
                           return ChoiceChip(
+                            elevation: 3,
+                              // maybe recommended design
+//                            shape: RoundedRectangleBorder(side: BorderSide(color: Colors.lightBlueAccent), borderRadius: BorderRadius.circular(30)),
+//                            shadowColor: Colors.pinkAccent,
+                            avatar: analysis.recommendedPlaylists.contains(playlist.id) ? Icon(Icons.star, size: 18, color: Colors.lightBlueAccent,) : null ,
                             selectedColor: theme.buttonColor,
                             onSelected: (value) async {
                               if (value)
-                                await playlist.addTrack(widget.api, tracks[i]);
+                                await playlist.addTrack(widget.api, track);
                               else
-                                await playlist.removeTrack(widget.api, tracks[i]);
+                                await playlist.removeTrack(widget.api, track);
                               setState(() {
                               });
                               project.curIndex = i;

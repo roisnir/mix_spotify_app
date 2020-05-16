@@ -112,20 +112,27 @@ class TrackTile extends StatelessWidget {
   final Track track;
   final Widget trailing;
   final Function(Track) onTap;
+  final String genres;
 
-  TrackTile(this.track, {this.trailing, this.onTap});
+  TrackTile(this.track, {this.trailing, this.onTap, this.genres});
 
   @override
-  Widget build(BuildContext context) => ListTile(
+  Widget build(BuildContext context) {
+    var subtitle = "Song | ${track.artists.map((artist) => artist.name).join(', ')}";
+    if (this.genres != null && this.genres.length > 0)
+      subtitle += '\r\n$genres';
+    return ListTile(
       leading:
       SpotifyImage(images: track.album.images, width: 50, height: 50),
       title: Text(track.name, softWrap: false),
       subtitle: Text(
-        "Song | ${track.artists.map((artist) => artist.name).join(', ')}",
+        subtitle,
         softWrap: false,
       ),
+      isThreeLine: genres != null && genres.length > 0,
       trailing: trailing,
       onTap: () => onTap(track));
+  }
 }
 
 class ArtistTile extends StatelessWidget {
