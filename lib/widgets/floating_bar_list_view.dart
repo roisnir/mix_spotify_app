@@ -7,36 +7,38 @@ class FloatingBarListView extends StatelessWidget {
   final int itemCount;
   final Widget Function(BuildContext context, int index) itemBuilder;
   final Widget Function(BuildContext context, int index) dividerBuilder;
-  final ScrollController controller;
+  final ScrollController scrollController;
 
-  FloatingBarListView({
-    @required this.appBar,
-      @required this.itemCount, @required this.itemBuilder, this.dividerBuilder,
-  this.controller});
+  FloatingBarListView(
+      {@required this.appBar,
+      @required this.itemCount,
+      @required this.itemBuilder,
+      this.dividerBuilder,
+      this.scrollController});
 
   get _childCount => dividerBuilder == null ? itemCount : (itemCount * 2) - 1;
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoScrollbar(
-      controller: controller,
-      child: CustomScrollView(
-        controller: controller,
-        slivers: <Widget>[
-          appBar,
-          SliverList(
-            delegate: SliverChildBuilderDelegate((c, i){
-              if (dividerBuilder == null)
-                return itemBuilder(c, i);
-              if (i.isOdd)
-                return dividerBuilder(c, i ~/ 2);
-              return itemBuilder(c, i ~/ 2);
-            },
-              childCount: _childCount,
-            ),
-          ),
-        ],
+    return
+CupertinoScrollbar(
+  controller: scrollController,
+  child: CustomScrollView(
+    controller: scrollController,
+    slivers: <Widget>[
+      appBar,
+      SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (c, i) {
+            if (dividerBuilder == null) return itemBuilder(c, i);
+            if (i.isOdd) return dividerBuilder(c, i ~/ 2);
+            return itemBuilder(c, i ~/ 2);
+          },
+          childCount: _childCount,
+        ),
       ),
-    );
+    ],
+  ),
+);
   }
 }

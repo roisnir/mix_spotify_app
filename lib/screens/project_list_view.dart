@@ -122,8 +122,13 @@ class _ProjectListViewState extends State<ProjectListView> {
             shownTracks = tracks.length;
             final theme = Theme.of(context);
             final conf = widget.projectConfig;
+            if (conf.trackIds.length == tracks.length)
+              {
+                scrollController = ScrollController(initialScrollOffset: scrollController.offset);
+                print('setting new controller');
+              }
             return FloatingBarListView(
-              controller: scrollController,
+              scrollController: scrollController,
               appBar: SliverAppBar(
                 actions: <Widget>[
                   IconButton(icon: Icon(Icons.subscriptions),onPressed: ()async{
@@ -141,7 +146,9 @@ class _ProjectListViewState extends State<ProjectListView> {
                   );
 
                   Navigator.of(context).pop(newCurIndex);
-                },)],
+                },),
+                  IconButton(icon: Icon(Icons.bug_report),onPressed: printScrollDebugs,),
+                ],
                 floating: true,
                 backgroundColor: Theme.of(context).backgroundColor,
                 expandedHeight: 150,
@@ -207,14 +214,6 @@ class _ProjectListViewState extends State<ProjectListView> {
   }
 
   Future setItemSize() async {
-    print(scrollController.position.axis.index);
-    print(scrollController.position.extentAfter);
-    print(scrollController.position.extentBefore);
-    print(scrollController.position.extentInside);
-    print(scrollController.position.viewportDimension);
-    print(scrollController.position.pixels);
-    print(scrollController.position.minScrollExtent);
-    print(scrollController.position.maxScrollExtent);
     final itemSize = scrollController.position.maxScrollExtent / shownTracks;
     print(itemSize);
 
@@ -223,5 +222,17 @@ class _ProjectListViewState extends State<ProjectListView> {
     print(scrollController.offset);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble(project.uuid, itemSize);
+  }
+
+  void printScrollDebugs(){
+    print('scrollController.position.axis.index: ${scrollController.position.axis.index}');
+    print('scrollController.position.extentAfter: ${scrollController.position.extentAfter}');
+    print('scrollController.position.extentBefore: ${scrollController.position.extentBefore}');
+    print('scrollController.position.extentInside: ${scrollController.position.extentInside}');
+    print('scrollController.position.viewportDimension: ${scrollController.position.viewportDimension}');
+    print('scrollController.position.pixels: ${scrollController.position.pixels}');
+    print('scrollController.position.minScrollExtent: ${scrollController.position.minScrollExtent}');
+    print('scrollController.position.maxScrollExtent: ${scrollController.position.maxScrollExtent}');
+    print('scrollController.position.maxScrollExtent: ${scrollController}');
   }
 }
