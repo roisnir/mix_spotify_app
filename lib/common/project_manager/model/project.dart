@@ -25,7 +25,14 @@ class ProjectConfiguration {
   ProjectConfiguration.fromJson (Map<String, dynamic> json, [List<String> _trackIds]) {
     name = json["name"];
     uuid = json["uuid"];
-    _curIndex = json["curIndex"];
+    if (_curIndex == null){
+      print('curIndex was null!!! in $name');
+      _curIndex = 0;
+    }
+    else {
+      _curIndex = json["curIndex"];
+    }
+
     trackIds = _trackIds ?? json['trackIds'].map<String>((tId)=> tId as String).toList();
     playlistIds = json["playlistIds"].split(";").toList();
     type = json["type"];

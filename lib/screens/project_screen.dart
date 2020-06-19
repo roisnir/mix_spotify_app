@@ -10,6 +10,7 @@ import 'package:spotify_manager/common/project_manager/projects_db.dart';
 import 'package:spotify_manager/screens/create_project/form_fields.dart';
 import 'package:spotify_manager/common/utils.dart';
 import 'package:marquee/marquee.dart';
+import 'package:spotify_manager/screens/edit_project.dart';
 import 'package:spotify_manager/screens/project_list_view.dart';
 import 'package:spotify_manager/widgets/error.dart';
 
@@ -116,21 +117,9 @@ class ProjectScreenState extends State<ProjectScreen> {
           appBar: AppBar(backgroundColor: Theme.of(context).canvasColor,
       elevation: 0,
       actions: <Widget>[
-        IconButton(icon: Icon(Icons.queue_music),onPressed: () async {
-          await player.stop();
-          final newCurIndex = await Navigator.of(context).push(
-              MaterialPageRoute(builder: (BuildContext subContext) {
-                return ProjectListView(
-                  projectConfig: widget.projectConfig..curIndex = project.curIndex,
-                  api: widget.client,
-                  me: widget.me,
-                  project: project,
-                );
-              })
-          );
-          Navigator.of(context).pop(newCurIndex);
-      },),
-        pauseButton
+        buildProjectToggle(context, project),
+        pauseButton,
+        buildEditProject(context)
       ],),
       body: Column(
         children: <Widget>[
@@ -165,6 +154,23 @@ class ProjectScreenState extends State<ProjectScreen> {
 
       ),
     );
+  }
+
+  IconButton buildProjectToggle(BuildContext context, Project project) {
+    return IconButton(icon: Icon(Icons.queue_music),onPressed: () async {
+        await player.stop();
+        final newCurIndex = await Navigator.of(context).push(
+            MaterialPageRoute(builder: (BuildContext subContext) {
+              return ProjectListView(
+                projectConfig: widget.projectConfig..curIndex = project.curIndex,
+                api: widget.client,
+                me: widget.me,
+                project: project,
+              );
+            })
+        );
+        Navigator.of(context).pop(newCurIndex);
+    },);
   }
 
   Widget get pauseButton => IconButton(
@@ -310,6 +316,36 @@ class ProjectScreenState extends State<ProjectScreen> {
     trackSubscription.cancel();
     super.dispose();
   }
+
+  IconButton buildEditProject(BuildContext context) {
+    return IconButton(
+      icon: Icon(Icons.edit),
+      onPressed: () async {
+        await player.stop();
+        final project = (await projectFuture);
+        widget.projectConfig.curIndex = project.curIndex;
+        final config = await project.getConfig(widget.projectConfig.trackIds);
+        final edited = await Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) => EditProject(
+              widget.client,
+              widget.me,
+              config,
+              onSave: (ctx, newConf) async {
+                Navigator.of(ctx).pop(await Navigator.of(ctx).push(
+                    MaterialPageRoute(
+                        builder: (_) => ProjectScreen(
+                            projectConfig: newConf,
+                            client: widget.client,
+                            me: widget.me))));
+              },
+            )));
+        if (edited != null){
+          Navigator.of(context).pop(edited);
+        }
+      },
+    );
+  }
+
 }
 
 class ProjectScreen extends StatefulWidget {
