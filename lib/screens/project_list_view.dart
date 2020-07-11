@@ -185,9 +185,10 @@ class _ProjectListViewState extends State<ProjectListView> {
                           final selected = playlist.contains(track);
                           return ChoiceChip(
                             elevation: 3,
-                              // maybe recommended design
-//                            shape: RoundedRectangleBorder(side: BorderSide(color: Colors.lightBlueAccent), borderRadius: BorderRadius.circular(30)),
-//                            shadowColor: Colors.pinkAccent,
+                              // genre recommended
+                            shape: analysis.similarGenrePlaylists.contains(playlist.id) ? RoundedRectangleBorder(side: BorderSide(color: Colors.lightBlueAccent), borderRadius: BorderRadius.circular(30)) : null,
+                            shadowColor: analysis.similarGenrePlaylists.contains(playlist.id) ? Colors.pinkAccent : null,
+                            // audio features recommended
                             avatar: analysis.recommendedPlaylists.contains(playlist.id) ? Icon(Icons.star, size: 18, color: Colors.lightBlueAccent,) : null ,
                             selectedColor: theme.buttonColor,
                             onSelected: (value) async {

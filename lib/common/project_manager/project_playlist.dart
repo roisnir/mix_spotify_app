@@ -14,6 +14,13 @@ class ProjectPlaylist {
     }
     return _audioFeature;
   }
+  Future<Map<String, int>> _genres;
+  Future<Map<String, int>> get genres {
+    if (_genres == null){
+      _genres = genresCounts(tracks, api);
+    }
+    return _genres;
+  }
 
 
   ProjectPlaylist(this.playlist, this.tracks, this.api);
@@ -28,6 +35,9 @@ class ProjectPlaylist {
     final af = await audioFeature.catchError((e){
       return null;
     });
+    if (af == null){
+      return null;
+    }
     num distance = 0;
 //    distance += af.mode - trackAF.mode;
     distance += (af.acousticness - trackAF.acousticness).abs();
@@ -52,6 +62,21 @@ class ProjectPlaylist {
     return ProjectPlaylist(await api.playlists.get(playlist.id), trackIds, api);
   }
 
+  Future<void> addTrack(SpotifyApi api, Track track) async {
+    // TODO: handle audioFeatures and genre
+    await api.playlists.addTrack(track.uri, playlist.id);
+    tracks.add(track);
+  }
+
+  Future<void> removeTrack(SpotifyApi api, Track track) async{
+    // TODO: handle audioFeatures and genre
+    await api.playlists.removeTrack(track.uri, playlist.id);
+    tracks.removeAt(tracks.indexWhere((t) => t.id == track.id));
+  }
+
+  bool includes(Track track) => this.tracks.firstWhere((t)=>t.id == track.id, orElse: ()=>null) != null;
+  bool contains(Track track) => this.includes(track);
+
   static Future<AudioFeature> avgAudioFutures(Iterable<Track> tracks, SpotifyApi api) async {
     tracks = tracks.where((track) => track.id != null);
     final audioFeatures = AudioFeature();
@@ -73,16 +98,14 @@ class ProjectPlaylist {
     return audioFeatures;
   }
 
-  Future<void> addTrack(SpotifyApi api, Track track) async {
-    await api.playlists.addTrack(track.uri, playlist.id);
-    tracks.add(track);
+  static Future<Map<String, int>> genresCounts(Iterable<Track> tracks, SpotifyApi api) async {
+    Map<String, int> genres = {};
+    for (var track in tracks){
+      final trackGenres = track.artists[0].id != null ? await api.artists.get(track.artists[0].id).then((artist)=>artist.genres) : [];
+      trackGenres.forEach((genre) {
+        genres[genre] = (genres[genre] ?? 0) + 1;
+      });
+    }
+    return genres;
   }
-
-  Future<void> removeTrack(SpotifyApi api, Track track) async{
-    await api.playlists.removeTrack(track.uri, playlist.id);
-    tracks.removeAt(tracks.indexWhere((t) => t.id == track.id));
-  }
-
-  bool includes(Track track) => this.tracks.firstWhere((t)=>t.id == track.id, orElse: ()=>null) != null;
-  bool contains(Track track) => this.includes(track);
 }
