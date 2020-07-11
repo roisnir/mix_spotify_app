@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:audioplayer/audioplayer.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spotify/spotify.dart' hide Image;
 import 'package:spotify_manager/common/project_manager/model/project.dart';
 import 'package:spotify_manager/common/project_manager/project.dart';
@@ -39,6 +40,7 @@ class _ProjectListViewState extends State<ProjectListView> {
   AudioPlayer player = new AudioPlayer();
   Queue<String> upNext;
   int nowPlaying;
+  int shownTracks = 0;
   
   @override
   void initState() {
@@ -48,16 +50,23 @@ class _ProjectListViewState extends State<ProjectListView> {
         projectFuture = Project.fromConfiguration(widget.projectConfig, widget.api);
       else
         projectFuture = Future.value(widget.project);
-      projectFuture.then((project) {
-        setState(() {
-          scrollController = ScrollController();
-          print("creating revisions stream");
-          trackAnalysisCache = TrackAnalysisCache(project.playlists, widget.api, onUpdate: ()=>setState((){}));
-          tracksRevisions = streamRevisions(project.tracks, 50);
-          this.project = project;
-        });
-        return projectFuture;
+    });
+    projectFuture.then((project) async {
+      final prefs = await SharedPreferences.getInstance();
+      final itemSize = prefs.containsKey(project.uuid)?prefs.getDouble(project.uuid):150.0;
+      final screenHeight = MediaQuery.of(context).size.height / 2;
+      print(itemSize);
+      print(project.curIndex);
+      print(itemSize * project.curIndex);
+      print((itemSize * project.curIndex) - (screenHeight / 2));
+      setState(() {
+        print("creating revisions stream");
+        trackAnalysisCache = TrackAnalysisCache(project.playlists, widget.api, onUpdate: ()=>setState((){}));
+        tracksRevisions = streamRevisions(project.tracks, batchSize: 50, minCount: project.curIndex + 10);
+        this.project = project;
+        scrollController = ScrollController(initialScrollOffset: (itemSize * project.curIndex) - (screenHeight / 2));
       });
+      return projectFuture;
     });
     player.onPlayerStateChanged.listen((var audioState) {
       if (audioState != AudioPlayerState.COMPLETED || upNext.length <= 0)
@@ -98,6 +107,7 @@ class _ProjectListViewState extends State<ProjectListView> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
+        await setItemSize();
         Navigator.of(context).pop((await projectFuture).curIndex);
         return false;
       },
@@ -116,13 +126,21 @@ class _ProjectListViewState extends State<ProjectListView> {
             if (!snapshot.hasData)
               return Center(child: CircularProgressIndicator());
             final tracks = snapshot.data;
+            shownTracks = tracks.length;
             final theme = Theme.of(context);
             final conf = widget.projectConfig;
+            if (conf.trackIds.length == tracks.length)
+              {
+                scrollController = ScrollController(initialScrollOffset: scrollController.offset);
+                print('setting new controller');
+              }
             return FloatingBarListView(
-              controller: scrollController,
+              scrollController: scrollController,
               appBar: SliverAppBar(
-                actions: <Widget>[IconButton(icon: Icon(Icons.subscriptions),onPressed: ()async{
+                actions: <Widget>[
+                  IconButton(icon: Icon(Icons.subscriptions),onPressed: ()async{
                   await player.stop();
+                  await setItemSize();
                   final newCurIndex = await Navigator.of(context).push(
                       MaterialPageRoute(builder: (BuildContext subContext) {
                         return ProjectScreen(
@@ -133,8 +151,11 @@ class _ProjectListViewState extends State<ProjectListView> {
                         );
                       })
                   );
+
                   Navigator.of(context).pop(newCurIndex);
-                },)],
+                },),
+                  IconButton(icon: Icon(Icons.bug_report),onPressed: printScrollDebugs,),
+                ],
                 floating: true,
                 backgroundColor: Theme.of(context).backgroundColor,
                 expandedHeight: 150,
@@ -214,5 +235,28 @@ class _ProjectListViewState extends State<ProjectListView> {
         ),
       ),
     );
+  }
+
+  Future setItemSize() async {
+    final itemSize = scrollController.position.maxScrollExtent / shownTracks;
+    print(itemSize);
+
+    print(shownTracks);
+    print(project.curIndex);
+    print(scrollController.offset);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(project.uuid, itemSize);
+  }
+
+  void printScrollDebugs(){
+    print('scrollController.position.axis.index: ${scrollController.position.axis.index}');
+    print('scrollController.position.extentAfter: ${scrollController.position.extentAfter}');
+    print('scrollController.position.extentBefore: ${scrollController.position.extentBefore}');
+    print('scrollController.position.extentInside: ${scrollController.position.extentInside}');
+    print('scrollController.position.viewportDimension: ${scrollController.position.viewportDimension}');
+    print('scrollController.position.pixels: ${scrollController.position.pixels}');
+    print('scrollController.position.minScrollExtent: ${scrollController.position.minScrollExtent}');
+    print('scrollController.position.maxScrollExtent: ${scrollController.position.maxScrollExtent}');
+    print('scrollController.position.maxScrollExtent: ${scrollController}');
   }
 }

@@ -44,12 +44,12 @@ class Project {
   }
 }
 
-Stream<List<T>> streamRevisions<T>(Stream<T> trackStream, [batchSize=10]) async* {
+Stream<List<T>> streamRevisions<T>(Stream<T> trackStream, {batchSize=10, minCount=0}) async* {
   final tracks = <T>[];
   final tracksIt = StreamIterator(trackStream);
   while (await tracksIt.moveNext()) {
     tracks.add(tracksIt.current);
-    if (tracks.length % batchSize == 0)
+    if (tracks.length % batchSize == 0 && tracks.length >= minCount)
       yield tracks;
   }
   print('yielding last');
