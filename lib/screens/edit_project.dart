@@ -10,8 +10,10 @@ class EditProject extends StatefulWidget {
   final SpotifyApi api;
   final User currentUser;
   final ProjectConfiguration project;
+  final Function(BuildContext context, ProjectConfiguration newProjectConf) onSave;
+  final Function(BuildContext context) onCancel;
 
-  EditProject(this.api, this.currentUser, this.project);
+  EditProject(this.api, this.currentUser, this.project, {this.onSave, this.onCancel});
 
   @override
   _EditProjectState createState() => _EditProjectState();
@@ -48,7 +50,14 @@ class _EditProjectState extends State<EditProject> {
         title: Text("Edit Poject"),
         leading: IconButton(
           icon: Icon(Icons.close),
-          onPressed: ()=>Navigator.of(context).pop(),
+          onPressed: (){
+            if (widget.onCancel != null) {
+              widget.onCancel(context);
+            }
+            else {
+            Navigator.of(context).pop();
+            }
+          },
         ),
         actions: <Widget>[
           FlatButton(
@@ -69,7 +78,12 @@ class _EditProjectState extends State<EditProject> {
                   ));
                 });
               });
-              Navigator.of(context).pop(widget.project);
+              if (widget.onSave != null) {
+                widget.onSave(context, widget.project);
+              }
+              else{
+                Navigator.of(context).pop(widget.project);
+              }
             },
           )
         ],
